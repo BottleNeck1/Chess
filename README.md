@@ -1,6 +1,5 @@
 # **Projects**
 
 ##  * Java-Projects:
-
-      * Chess
+* Chess
 
