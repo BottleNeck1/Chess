@@ -1,3 +1,5 @@
+import java.io.File;
+
 /**
  * Knight Class Object
  * 
@@ -16,6 +18,8 @@ public class Knight extends Rook {
     public Knight(int row, int col, boolean isWhitePiece){
         super(row, col, isWhitePiece);
         this.name = "N";
+        this.whiteImgFile = new File("src/resources/WhiteKnight.png");
+        this.blackImgFile = new File("src/resources/BlackKnight.png");
         this.row = row;
         this.col = col;
         this.isWhitePiece = isWhitePiece;

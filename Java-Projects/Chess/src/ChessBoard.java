@@ -1,3 +1,4 @@
+import java.awt.Image;
 import java.util.Arrays;
 
 /**
@@ -79,16 +80,15 @@ public class ChessBoard {
         pieces[SEVEN_POS][2] = new Bishop(SEVEN_POS, 2, true);
         pieces[SEVEN_POS][FIVE_POS] = new Bishop(SEVEN_POS, FIVE_POS, true);
 
-        pieces[0][3] = new King(0, 3, false);
+        pieces[0][FOUR_POS] = new King(0, FOUR_POS, false);
         blackKingRow = 0;
-        blackKingCol = 3;
-        pieces[SEVEN_POS][3] = new King(SEVEN_POS, 3, true);
+        blackKingCol = FOUR_POS;
+        pieces[SEVEN_POS][FOUR_POS] = new King(SEVEN_POS, FOUR_POS, true);
         whiteKingRow = SEVEN_POS;
-        whiteKingCol = 3;
+        whiteKingCol = FOUR_POS;        
         
-        
-        pieces[0][FOUR_POS] = new Queen(0, FOUR_POS, false);
-        pieces[SEVEN_POS][FOUR_POS] = new Queen(SEVEN_POS, FOUR_POS, true);
+        pieces[0][3] = new Queen(0, 3, false);
+        pieces[SEVEN_POS][3] = new Queen(SEVEN_POS, 3, true);
     }
 
     /**
@@ -111,6 +111,18 @@ public class ChessBoard {
         return "";
     }
 
+    public Image getImage(int row, int col){
+        if(row < 0 || row >= ARRAY_SIZE || col < 0 || col >= ARRAY_SIZE){
+            throw new IllegalArgumentException("Invalid row or col");
+        }
+
+        if(pieces[row][col] != null){
+            return pieces[row][col].getImage();
+        }
+
+        return null;
+    }
+
     /**
      * Using the starting row and col, find all available moves
      * @param startRow selected piece row to check
@@ -127,6 +139,10 @@ public class ChessBoard {
                     boolean isWhitePiece = pieces[startRow][startCol].isWhitePiece();
                     boolean doContinue = false;
                     Piece temp;
+
+                    // temp = pieces[row][col];
+                    // pieces[row][col] = pieces[startRow][startCol];
+                    // pieces[startRow][startCol] = null;
 
                     if(pieces[startRow][startCol] instanceof King){
 
@@ -160,10 +176,51 @@ public class ChessBoard {
                         pieces[row][col] = temp;
 
                     }
-                    else if((isWhitePiece && !isMate(true)) ||
-                        (!isWhitePiece && !isMate(false))) {
+
+                    if(isWhitePiece && isWhiteMate){
+
+                        temp = pieces[row][col];
+                        pieces[row][col] = pieces[startRow][startCol];
+                        pieces[startRow][startCol] = null;
+
+                        if(isMate(true)){
+                            doContinue = true;
+                        }
+
+                        pieces[startRow][startCol] = pieces[row][col];
+                        pieces[row][col] = temp;
+                    }
+                    else if(!isWhitePiece && isBlackMate){
                         
-                        temp = pieces[startRow][startCol];
+                        temp = pieces[row][col];
+                        pieces[row][col] = pieces[startRow][startCol];
+                        pieces[startRow][startCol] = null;
+
+                        if(isMate(false)){
+                            doContinue = true;
+                        }
+
+                        pieces[startRow][startCol] = pieces[row][col];
+                        pieces[row][col] = temp;
+                    }
+
+                    // pieces[startRow][startCol] = pieces[row][col];
+                    // pieces[row][col] = temp;
+
+                    // if(doContinue){
+                    //     continue;
+                    // }
+
+                    // temp = pieces[row][col];
+                    // pieces[row][col] = pieces[startRow][startCol];
+                    // pieces[startRow][startCol] = null;
+
+                    
+                    if((isWhitePiece && !isMate(true)) ||
+                        (!isWhitePiece && !isMate(false))) {
+
+                        temp = pieces[row][col];
+                        pieces[row][col] = pieces[startRow][startCol];
                         pieces[startRow][startCol] = null;
                         
                         if(isWhitePiece){
@@ -179,8 +236,12 @@ public class ChessBoard {
                             }
                         }
 
-                        pieces[startRow][startCol] = temp;
+                        pieces[startRow][startCol] = pieces[row][col];
+                        pieces[row][col] = temp;
                     }
+
+                    // pieces[startRow][startCol] = pieces[row][col];
+                    // pieces[row][col] = temp;
                     
                     if(doContinue){
                         continue;

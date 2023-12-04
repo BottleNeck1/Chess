@@ -1,3 +1,5 @@
+import java.awt.Image;
+
 /**
  * Piece Interface
  * 
@@ -36,14 +38,20 @@ public interface Piece {
     public void firstMove();
 
     /**
-     * Accesor method for instance field row
+     * Accessor method for instance field row
      * @return row
      */
     public int getRow();
 
     /**
-     * Accesor method for instance field col
+     * Accessor method for instance field col
      * @return col
      */
     public int getCol();
+
+    /**
+     * Accessor mehod for instance fields whiteImgFile and blackImgFile
+     * @return whiteImgFile if white piece or blackImgFile if black piece
+     */
+    public Image getImage();
 }

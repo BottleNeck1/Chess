@@ -1,3 +1,8 @@
+import java.awt.Image;
+import java.io.File;
+
+import javax.imageio.ImageIO;
+
 /**
  * Rook Class Object
  * 
@@ -22,6 +27,12 @@ public class Rook implements Piece {
 
     /** Each piece starts off with isFirstMove to true */
     protected boolean isFirstMove = true;
+
+    /** White Piece File Path */
+    protected File whiteImgFile = new File("src/resources/WhiteRook.png");
+
+    /** Black Piece File Path */
+    protected File blackImgFile = new File("src/resources/BlackRook.png");
 
     /**
      * Rook Constructor
@@ -53,6 +64,19 @@ public class Rook implements Piece {
      */
     public String getName(){
         return name;
+    }
+
+    /** 
+     * Find image from file and return it
+     * @return Image
+     */
+    public Image getImage(){
+        try {
+            Image img = ImageIO.read(isWhitePiece ? whiteImgFile : blackImgFile);
+            return img;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**

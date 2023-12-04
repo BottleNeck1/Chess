@@ -1,3 +1,5 @@
+import java.io.File;
+
 /**
  * King Class Object
  * 
@@ -16,6 +18,8 @@ public class King extends Rook {
     public King(int row, int col, boolean isWhitePiece){
         super(row, col, isWhitePiece);
         this.name = "K";
+        this.whiteImgFile = new File("src/resources/WhiteKing.png");
+        this.blackImgFile = new File("src/resources/BlackKing.png");
         this.row = row;
         this.col = col;
         this.isWhitePiece = isWhitePiece;

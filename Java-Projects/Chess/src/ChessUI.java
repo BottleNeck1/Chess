@@ -1,8 +1,14 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
+
+import java.awt.Image;
+import javax.imageio.ImageIO;
 
 /**
  * Chess Game GUI
@@ -81,7 +87,11 @@ public class ChessUI extends JFrame implements ActionListener {
         for(int row = 0; row < GRID_SIZE; row++){
 
             for(int col = 0; col < GRID_SIZE; col++){
-                buttons[row][col] = new JButton(chessBoard.getName(row, col));
+                buttons[row][col] = new JButton();
+                if(chessBoard.getImage(row, col) != null){
+                    buttons[row][col].setIcon(new ImageIcon(chessBoard.getImage(row, col)));
+                }
+                buttons[row][col].setHorizontalTextPosition(SwingConstants.CENTER);
                 buttons[row][col].setFont(new Font("Default", Font.BOLD, PIECE_TXT_SIZE));
                 buttons[row][col].setBorder(new LineBorder(Color.BLACK, 1));
                 buttons[row][col].setFocusPainted(false);
@@ -107,7 +117,6 @@ public class ChessUI extends JFrame implements ActionListener {
             }
             background = !background;
         }
-
 
         setVisible(true);
     }
@@ -207,7 +216,13 @@ public class ChessUI extends JFrame implements ActionListener {
     }
 
     private void movePiece(int row, int col){
-        buttons[row][col].setText(chessBoard.getName(selectPieceRow, selectPieceCol));
+        //buttons[row][col].setText(chessBoard.getName(selectPieceRow, selectPieceCol));
+
+        if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
+            buttons[row][col].setIcon(
+                new ImageIcon(chessBoard.getImage(selectPieceRow, selectPieceCol)));
+            buttons[selectPieceRow][selectPieceCol].setIcon(null);
+        }
 
         if(isWhiteTurn){
             buttons[row][col].setForeground(Color.WHITE);
@@ -237,9 +252,9 @@ public class ChessUI extends JFrame implements ActionListener {
             buttons[kingRow][kingCol].setBackground(
                 new Color(GREEN_VALUE_1, 0, 0)//RED COLOR 
             );
-            buttons[kingRow][kingCol].setBorder(
-                new LineBorder(Color.WHITE, 3)
-            );
+            // buttons[kingRow][kingCol].setBorder(
+            //     new LineBorder(Color.WHITE, 3)
+            // );
         }
 
         if(chessBoard.isMate(false)){//check black king is mate
@@ -249,9 +264,9 @@ public class ChessUI extends JFrame implements ActionListener {
             buttons[kingRow][kingCol].setBackground(
                 new Color(GREEN_VALUE_1, 0, 0)//RED COLOR 
             );
-            buttons[kingRow][kingCol].setBorder(
-                new LineBorder(Color.BLACK, 3)
-            );
+            // buttons[kingRow][kingCol].setBorder(
+            //     new LineBorder(Color.BLACK, 3)
+            // );
         }
     }
 

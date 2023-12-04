@@ -1,3 +1,5 @@
+import java.io.File;
+
 /**
  * Bishop Class Object
  * 
@@ -16,6 +18,8 @@ public class Bishop extends Rook {
     public Bishop(int row, int col, boolean isWhitePiece){
         super(row, col, isWhitePiece);
         this.name = "B";
+        this.whiteImgFile = new File("src/resources/WhiteBishop.png");
+        this.blackImgFile = new File("src/resources/BlackBishop.png");
         this.row = row;
         this.col = col;
         this.isWhitePiece = isWhitePiece;

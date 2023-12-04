@@ -1,3 +1,5 @@
+import java.io.File;
+
 /**
  * Queen Class Object
  * 
@@ -16,6 +18,8 @@ public class Queen extends Rook {
     public Queen(int row, int col, boolean isWhitePiece){
         super(row, col, isWhitePiece);
         this.name = "Q";
+        this.whiteImgFile = new File("src/resources/WhiteQueen.png");
+        this.blackImgFile = new File("src/resources/BlackQueen.png");
         this.row = row;
         this.col = col;
         this.isWhitePiece = isWhitePiece;
