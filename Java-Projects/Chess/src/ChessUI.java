@@ -1,7 +1,7 @@
-
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
 /**
@@ -70,8 +70,8 @@ public class ChessUI extends JFrame implements ActionListener {
         super("Chess");
         setSize(SIZE, SIZE);
         setLocation(100, 100);
-        setBackground(Color.DARK_GRAY);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        board.setBackground(Color.DARK_GRAY);
 
         add(board);
 
@@ -83,6 +83,8 @@ public class ChessUI extends JFrame implements ActionListener {
             for(int col = 0; col < GRID_SIZE; col++){
                 buttons[row][col] = new JButton(chessBoard.getName(row, col));
                 buttons[row][col].setFont(new Font("Default", Font.BOLD, PIECE_TXT_SIZE));
+                buttons[row][col].setBorder(new LineBorder(Color.BLACK, 1));
+                buttons[row][col].setFocusPainted(false);
                 buttons[row][col].addActionListener(this);
                 board.add(buttons[row][col]);
 
@@ -125,51 +127,83 @@ public class ChessUI extends JFrame implements ActionListener {
                     
                     if(!pieceChosen){
 
-                        if(chessBoard.canSelect(row, col, isWhiteTurn)) { return; }
+                        if(chessBoard.canSelect(row, col, isWhiteTurn)) { break; }
                         
-                        selectPiece(row, col);
-                        return;
+                        markAvailable(row, col);
+                        break;
                     }
                     else {
 
                         if(selectPieceRow == row && selectPieceCol == col){
-                            deselectPiece(row, col);
-                            return;
+                            unmark();
+                            break;
                         }
 
-                        if(!chessBoard.canMove(selectPieceRow, selectPieceCol, row, col) ){
-                            return;
+                        if(!chessBoard.isValidMove(row, col)){
+                            break;
                         }
-
-                        deselectPiece(selectPieceRow, selectPieceCol);
                         
                         movePiece(row, col);
-                        isWhiteTurn = !isWhiteTurn;
-                        return;
+                        break;
                     }
                 }
             }
         }
     }
 
-    private void selectPiece(int row, int col){
-        pieceChosen = true;
-        buttons[row][col].setBackground(Color.GRAY);
-        buttons[row][col].setBorder(new LineBorder(Color.GREEN, 3));
-        selectPieceRow = row;
-        selectPieceCol = col;
-    }
+    private void markAvailable(int startRow, int startCol){
 
-    private void deselectPiece(int row, int col){
-        pieceChosen = false;
-        int getColor = row + 2;
+        chessBoard.setValidMoves(startRow, startCol);
 
-        if(getColor > WHITE_BOTTOM_ROW){
-            getColor = row - 2;
+        for(int row = 0; row < GRID_SIZE; row++){
+
+            for(int col = 0; col < GRID_SIZE; col++){
+
+                if(chessBoard.isValidMove(row, col) && 
+                    (startRow != row || startCol != col)){
+
+                    buttons[row][col].setBorder(new BevelBorder(BevelBorder.RAISED));
+                    buttons[row][col].setBackground(
+                        new Color(0, GREEN_VALUE_1, 0));                    
+                }
+                else if(startRow == row && startCol == col){
+                    pieceChosen = true;
+                    selectPieceRow = row;
+                    selectPieceCol = col;
+                }
+            }
         }
 
-        buttons[row][col].setBackground(buttons[getColor][col].getBackground());
-        buttons[row][col].setBorder(new LineBorder(null));
+        isMate();
+        buttons[startRow][startCol].setBackground(Color.GRAY);
+        buttons[startRow][startCol].setBorder(new BevelBorder(BevelBorder.LOWERED));
+    }
+
+    private void unmark(){
+
+        chessBoard.resetAvailableMoves();
+
+        pieceChosen = false;
+        boolean background = true;
+        for(int row = 0; row < GRID_SIZE; row++){
+
+            for(int col = 0; col < GRID_SIZE; col++){
+
+                if(background){
+                    buttons[row][col].setBackground(
+                        new Color(RED_VALUE_1, GREEN_VALUE_1, BLUE_VALUE_1));
+                }
+                else {
+                    buttons[row][col].setBackground(
+                        new Color(RED_VALUE_2, GREEN_VALUE_2, BLUE_VALUE_2));
+                }
+                background = !background;
+                buttons[row][col].setBorder(new LineBorder(Color.BLACK, 1));              
+            }
+            background = !background;
+        }
+
+        isMate();
     }
 
     private void movePiece(int row, int col){
@@ -185,6 +219,40 @@ public class ChessUI extends JFrame implements ActionListener {
         buttons[selectPieceRow][selectPieceCol].setText("");
         chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
 
+        unmark();
+        chessBoard.resetAvailableMoves();
+        isWhiteTurn = !isWhiteTurn;
+    }
+
+    private void isMate(){
+
+        int kingRow;
+        int kingCol;
+
+        if(chessBoard.isMate(true)){//check white king is mate
+
+            kingRow = chessBoard.getKingRow(true);
+            kingCol = chessBoard.getKingCol(true);
+
+            buttons[kingRow][kingCol].setBackground(
+                new Color(GREEN_VALUE_1, 0, 0)//RED COLOR 
+            );
+            buttons[kingRow][kingCol].setBorder(
+                new LineBorder(Color.WHITE, 3)
+            );
+        }
+
+        if(chessBoard.isMate(false)){//check black king is mate
+            kingRow = chessBoard.getKingRow(false);
+            kingCol = chessBoard.getKingCol(false);
+
+            buttons[kingRow][kingCol].setBackground(
+                new Color(GREEN_VALUE_1, 0, 0)//RED COLOR 
+            );
+            buttons[kingRow][kingCol].setBorder(
+                new LineBorder(Color.BLACK, 3)
+            );
+        }
     }
 
     /** Resets Game */

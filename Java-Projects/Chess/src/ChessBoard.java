@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /**
  * Chess Board Class Object
  * 
@@ -11,6 +13,9 @@ public class ChessBoard {
     /** 2D array of Chess pieces */
     private Piece[][] pieces = new Piece[ARRAY_SIZE][ARRAY_SIZE];
 
+    /** 2D array of available moves */
+    private boolean[][] validMoves = new boolean[ARRAY_SIZE][ARRAY_SIZE];
+
     /** 7 Grid Position */
     private static final int SEVEN_POS = 7;
 
@@ -23,6 +28,24 @@ public class ChessBoard {
     /** 4 Grid Position */
     private static final int FOUR_POS = 4;
 
+    /** White King Row Position */
+    private int whiteKingRow;
+
+    /** White King Col Position */
+    private int whiteKingCol;
+
+    /** Black King Row Position */
+    private int blackKingRow;
+
+    /** Black King Col Position */
+    private int blackKingCol;
+
+    /** Is White King Under Check */
+    private boolean isWhiteMate;
+
+    /** Is Black King Under Check */
+    private boolean isBlackMate;
+
     /** ChessBoard Constructor */
     public ChessBoard(){
 
@@ -31,6 +54,11 @@ public class ChessBoard {
 
     /** Sets the chess board up for play */
     public void setBoard(){
+
+        for(int i = 0; i < ARRAY_SIZE; i++){
+            Arrays.fill(validMoves[i], false);
+        }
+
         for(int col = 0; col < ARRAY_SIZE; col++){
             pieces[1][col] = new Pawn(1, col, false);
             pieces[SIX_POS][col] = new Pawn(SIX_POS, col, true);
@@ -52,7 +80,12 @@ public class ChessBoard {
         pieces[SEVEN_POS][FIVE_POS] = new Bishop(SEVEN_POS, FIVE_POS, true);
 
         pieces[0][3] = new King(0, 3, false);
+        blackKingRow = 0;
+        blackKingCol = 3;
         pieces[SEVEN_POS][3] = new King(SEVEN_POS, 3, true);
+        whiteKingRow = SEVEN_POS;
+        whiteKingCol = 3;
+        
         
         pieces[0][FOUR_POS] = new Queen(0, FOUR_POS, false);
         pieces[SEVEN_POS][FOUR_POS] = new Queen(SEVEN_POS, FOUR_POS, true);
@@ -79,6 +112,109 @@ public class ChessBoard {
     }
 
     /**
+     * Using the starting row and col, find all available moves
+     * @param startRow selected piece row to check
+     * @param startCol selected piece column to check
+     */
+    public void setValidMoves(int startRow, int startCol){
+
+        for(int row = 0; row < ARRAY_SIZE; row++){
+
+            for(int col = 0; col < ARRAY_SIZE; col++){
+
+                if(canMove(startRow, startCol, row, col)){
+
+                    boolean isWhitePiece = pieces[startRow][startCol].isWhitePiece();
+                    boolean doContinue = false;
+                    Piece temp;
+
+                    if(pieces[startRow][startCol] instanceof King){
+
+                        temp = pieces[row][col];
+                        pieces[row][col] = pieces[startRow][startCol];
+                        pieces[startRow][startCol] = null;
+
+                        if(isWhitePiece){//white side
+                            
+                            whiteKingRow = row;
+                            whiteKingCol = col;
+
+                            if(isMate(true)){
+                                doContinue = true;
+                            }
+                            whiteKingRow = startRow;
+                            whiteKingCol = startCol;
+                        }
+                        else {//black side
+                            blackKingRow = row;
+                            blackKingCol = col;
+
+                            if(isMate(false)){
+                                doContinue = true;
+                            }
+                            blackKingRow = startRow;
+                            blackKingCol = startCol;
+                        }
+
+                        pieces[startRow][startCol] = pieces[row][col];
+                        pieces[row][col] = temp;
+
+                    }
+                    else if((isWhitePiece && !isMate(true)) ||
+                        (!isWhitePiece && !isMate(false))) {
+                        
+                        temp = pieces[startRow][startCol];
+                        pieces[startRow][startCol] = null;
+                        
+                        if(isWhitePiece){
+                            
+                            if(isMate(true)){
+                                doContinue = true;
+                            }
+                        }
+                        else {
+
+                            if(isMate(false)){
+                                doContinue = true;
+                            }
+                        }
+
+                        pieces[startRow][startCol] = temp;
+                    }
+                    
+                    if(doContinue){
+                        continue;
+                    }
+
+                    if((row == whiteKingRow && col == whiteKingCol) || 
+                        (row == blackKingRow && col == blackKingCol)){
+                        continue;
+                    }
+
+                    validMoves[row][col] = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * Given the potential moves row and column, checks if is a valid move
+     * @param endRow potential move row to check
+     * @param endCol potential move column to check
+     * @return true if a valid move, false otherwise
+     */
+    public boolean isValidMove(int endRow, int endCol){
+        return validMoves[endRow][endCol];
+    }
+
+    /** Sets all values in validMoves to false */
+    public void resetAvailableMoves(){
+        for(int i = 0; i < ARRAY_SIZE; i++){
+            Arrays.fill(validMoves[i], false);
+        }
+    }
+
+    /**
      * Calls canMove method for an object in Piece array
      * @param currentRow current row
      * @param currentCol current column
@@ -101,23 +237,26 @@ public class ChessBoard {
             throw new IllegalArgumentException("Invalid potential row or col");
         }
 
-        if(pieces[currentRow][currentCol] == null){
+        Piece currentPiece = pieces[currentRow][currentCol];
+        Piece potentialPiece = pieces[potentialRow][potentialCol];
+
+        if(currentPiece == null){
             return false;
         }
 
         if(pieces[potentialRow][potentialCol] != null &&
-            (pieces[currentRow][currentCol].isWhitePiece() == 
-            pieces[potentialRow][potentialCol].isWhitePiece())) {
+            (currentPiece.isWhitePiece() == 
+            potentialPiece.isWhitePiece())) {
 
             return false;
         }
 
-        if(pieces[currentRow][currentCol] instanceof Pawn && currentCol != potentialCol){
-            Pawn p = (Pawn)pieces[currentRow][currentCol];
+        if(currentPiece instanceof Pawn && currentCol != potentialCol){
+            Pawn p = (Pawn)currentPiece;
 
             if(pieces[potentialRow][potentialCol] == null || 
-                pieces[currentRow][currentCol].isWhitePiece() == 
-                pieces[potentialRow][potentialCol].isWhitePiece()){
+                currentPiece.isWhitePiece() == 
+                potentialPiece.isWhitePiece()){
 
                 return false;
             }
@@ -125,8 +264,8 @@ public class ChessBoard {
             return p.canAttack(potentialRow, potentialCol);
         }
 
-        return pieces[currentRow][currentCol].canMove(potentialRow, potentialCol) &&
-            isUnobstructed(pieces[currentRow][currentCol], potentialRow, potentialCol);
+        return currentPiece.canMove(potentialRow, potentialCol) &&
+            isUnobstructed(currentPiece, potentialRow, potentialCol);
     }
 
     private boolean isUnobstructed(Piece p, int endRow, int endCol){
@@ -366,13 +505,14 @@ public class ChessBoard {
     }
 
     /**
-     * If the object at index row,col is null return true
+     * If the object at index
+     *  row,col is null return true
      * @param row row parameter
      * @param col column parameter
      * @return returns true if object in array is null, else return false
      * @throws IllegalArgumentException if row or col is out of bounds
      */
-    private boolean isNull(int row, int col){
+    public boolean isNull(int row, int col){
 
         if(row < 0 || row >= ARRAY_SIZE || col < 0 || col >= ARRAY_SIZE){
             throw new IllegalArgumentException("Invalid row or col");
@@ -427,9 +567,101 @@ public class ChessBoard {
             throw new IllegalArgumentException("Invalid new row or col");
         }
 
+        if(pieces[currentRow][currentCol] instanceof King){
+
+            if(pieces[currentRow][currentCol].isWhitePiece()){
+                whiteKingRow = newRow;
+                whiteKingCol = newCol;
+            }
+            else {
+                blackKingRow = newRow;
+                blackKingCol = newCol;
+            }
+        }
+
         pieces[currentRow][currentCol].firstMove();
         pieces[currentRow][currentCol].setPosition(newRow, newCol);
         pieces[newRow][newCol] = pieces[currentRow][currentCol];
         pieces[currentRow][currentCol] = null;
-    }    
+    }
+
+    /**
+     * Checks if any piece in the pieces array is able to attack a king
+     * and but them in check
+     * @param side true to check white king, false to check black king
+     * @return true is any opposing piece is able to put the king in check
+     */
+    public boolean isMate(boolean side){
+
+        if(side){
+            isWhiteMate = false;
+        }
+        else {
+            isBlackMate = false;
+        }
+
+        for(int row = 0; row < ARRAY_SIZE; row++){
+
+            for(int col = 0; col < ARRAY_SIZE; col++){
+
+                if(canMove(row, col, getKingRow(side), getKingCol(side))) { 
+                    if(side){
+                        isWhiteMate = true;
+                    }
+                    else {
+                        isBlackMate = true;
+                    }
+                    return true; 
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks around the king to see if it has an available move
+     * @param side true to check white king, false to check black king
+     * @return true if finds a spot that the king can move to, else false
+     */
+    public boolean canKingMove(boolean side){
+        int[] rowMovement = {0, 0, 1, 1, 1, -1, -1, -1};//0: Right 1: Left 2:Down-Right Diag 3:Down
+        int[] colMovement = {1, -1, 1, 0, -1, 1, 0, -1};//4:Down-Left 5:Up-Right 6: Up 7:Up-Left
+
+        int kingRow = getKingRow(side);
+        int kingCol = getKingCol(side);
+
+        for(int i = 0; i < rowMovement.length; i++){
+
+            if(canMove(kingRow, kingCol, rowMovement[i], colMovement[i])){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Return kings row for the side
+     * @param side true to get white king row, false for black king row
+     * @return king row 
+     */
+    public int getKingRow(boolean side){
+        if(side){
+            return whiteKingRow;
+        }
+        return blackKingRow;
+    }
+
+    /**
+     * Return kings column for the side
+     * @param side true to get white king column, false for black king column
+     * @return king column 
+     */
+    public int getKingCol(boolean side){
+        if(side){
+            return whiteKingCol;
+        }
+        return blackKingCol;
+    }
 }
