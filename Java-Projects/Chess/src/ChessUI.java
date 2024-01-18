@@ -10,7 +10,7 @@ import javax.swing.border.LineBorder;
  * 
  * @author Dvid Martinez
  */
-public class ChessUI extends JFrame implements ActionListener {
+public class ChessUI extends JFrame implements ActionListener{
 
     /** Grid Board Size */
     private static final int GRID_SIZE = 8;
@@ -19,10 +19,10 @@ public class ChessUI extends JFrame implements ActionListener {
     private static final int SIZE = 500;
 
     /** Grid Board JPanel */
-    private JPanel board = new JPanel(new GridLayout(GRID_SIZE, GRID_SIZE));
+    private JPanel board;
 
     /** Buttons 2D Array */
-    private JButton[][] buttons = new JButton[GRID_SIZE][GRID_SIZE];
+    private JButton[][] buttons;
 
     /** Chess Game Class Instance */
     private ChessBoard chessBoard;
@@ -40,6 +40,18 @@ public class ChessUI extends JFrame implements ActionListener {
 
     /** User selected piece to move column */
     private int selectPieceCol;
+
+    /** Promotion Menu */
+    private JPopupMenu promoteMenu;
+
+    /** Menu Items */
+    private JMenuItem queenItem, rookItem, knightItem, bishopItem;
+
+    /** Mouse X Position */
+    private int mouseX;
+
+    /** Mouse Y Position */
+    private int mouseY;
 
     /** RGB Value */
     private static final int RED_VALUE_1 = 225;
@@ -65,8 +77,11 @@ public class ChessUI extends JFrame implements ActionListener {
         setSize(SIZE, SIZE);
         setLocation(100, 100);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        board.setBackground(Color.DARK_GRAY);
 
+        board = new JPanel(new GridLayout(GRID_SIZE, GRID_SIZE));
+        buttons = new JButton[GRID_SIZE][GRID_SIZE];
+
+        board.setBackground(Color.DARK_GRAY);
         add(board); //add the primary JPanel
 
         chessBoard = new ChessBoard(); //create instance of ChessBoard Class to handle game
@@ -78,6 +93,14 @@ public class ChessUI extends JFrame implements ActionListener {
             for(int col = 0; col < GRID_SIZE; col++){
                 //Define a new button for the buttons array at [row][col]
                 buttons[row][col] = new JButton();
+
+                buttons[row][col].addMouseListener(new MouseAdapter() {
+                @Override 
+                public void mousePressed(MouseEvent e) {
+                    mouseX = e.getX();
+                    mouseY = e.getY();
+                }
+                });
 
                 //if piece at [row][col] has image, set the button to have an ImageIcon
                 if(chessBoard.getImage(row, col) != null){
@@ -112,7 +135,19 @@ public class ChessUI extends JFrame implements ActionListener {
                 background = !background;
             }
             background = !background;
-        }
+        }       
+
+        promoteMenu = new JPopupMenu();
+
+        queenItem = new JMenuItem("Queen");
+        rookItem = new JMenuItem("Rook");
+        bishopItem = new JMenuItem("Bishop");
+        knightItem = new JMenuItem("Knight");
+
+        promoteMenu.add(queenItem);
+        promoteMenu.add(rookItem);
+        promoteMenu.add(bishopItem);
+        promoteMenu.add(knightItem);
 
         //make GUI visible to user
         setVisible(true);
@@ -169,6 +204,8 @@ public class ChessUI extends JFrame implements ActionListener {
 
     private void markAvailable(int startRow, int startCol){
 
+        chessBoard.resetAvailableMoves();
+
         //sets all valid moves by [row][col]
         boolean hasValidMove = chessBoard.setValidMoves(startRow, startCol);
 
@@ -212,7 +249,7 @@ public class ChessUI extends JFrame implements ActionListener {
     private void unmark(){
 
         //calls the chessboard method to reset the valid moves in the 2D boolean array
-        chessBoard.resetAvailableMoves();
+        // chessBoard.resetAvailableMoves();
 
         //next player can now choose their piece to move
         pieceChosen = false;
@@ -243,6 +280,14 @@ public class ChessUI extends JFrame implements ActionListener {
     private void movePiece(int row, int col){
         //buttons[row][col].setText(chessBoard.getName(selectPieceRow, selectPieceCol));
 
+        //resets all available moves for a new turn
+        // chessBoard.resetAvailableMoves();
+
+        if(chessBoard.canPromote(selectPieceRow, selectPieceCol, row, isWhiteTurn)){
+
+            promoteMenu.show(this, selectPieceCol * 50, selectPieceRow * 50);
+        }
+
         //when moving a piece, given the target button the corresponding ImageIcon
         if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
             buttons[row][col].setIcon(
@@ -264,8 +309,7 @@ public class ChessUI extends JFrame implements ActionListener {
 
         //unmarks the marked spaces for a new turn
         unmark();
-        //resets all available moves for a new turn
-        chessBoard.resetAvailableMoves();
+        
         //make it the next players turn after they have moved a piece
         isWhiteTurn = !isWhiteTurn;
 

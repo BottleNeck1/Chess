@@ -824,4 +824,27 @@ public class ChessBoard {
         }
         return blackKingCol;
     }
+
+    
+    public boolean canPromote(int startRow, int startCol, int endRow, boolean isWhiteSide){
+
+        if(pieces[startRow][startCol] instanceof Pawn == false){
+            return false;
+        }
+
+        if(isWhiteSide){
+
+            if(endRow == 0){
+                return true; 
+            }
+        }
+        else {
+
+            if(endRow == SEVEN_POS){
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
