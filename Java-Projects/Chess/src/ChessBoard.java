@@ -142,13 +142,16 @@ public class ChessBoard {
      * Using the starting row and col, find all available moves
      * @param startRow selected piece row to check
      * @param startCol selected piece column to check
+     * @returns True if any valid move, otherwise return false
      * @throws IllegalArgumentException if row or col is out of bounds
      */
-    public void setValidMoves(int startRow, int startCol){
+    public boolean setValidMoves(int startRow, int startCol){
 
         if(startRow < 0 || startRow >= ARRAY_SIZE || startCol < 0 || startCol >= ARRAY_SIZE){
             throw new IllegalArgumentException("Invalid row or col");
         }
+
+        boolean hasValidMove = false;
 
         //iterates through pieces array to check if piece at [startRow][startCol] 
         //is able to move their (does not check for check)
@@ -205,6 +208,17 @@ public class ChessBoard {
 
                     }
 
+                    //If Moving a king and does should not continue, all checks are performed and (dont go to below checks)
+                    //and sets the valid move in the bool array and makes hasValidMove true
+                    if(pieces[startRow][startCol] instanceof King && !doContinue){
+                        validMoves[row][col] = true;
+                        hasValidMove = true;
+                        continue;
+                    }
+                    else if(doContinue){
+                        continue;
+                    }
+
                     //when moving a white piece and white king is in check
                     if(isWhitePiece && isWhiteCheck){
 
@@ -241,9 +255,9 @@ public class ChessBoard {
                     // pieces[startRow][startCol] = pieces[row][col];
                     // pieces[row][col] = temp;
 
-                    // if(doContinue){
-                    //     continue;
-                    // }
+                    if(doContinue){
+                        continue;
+                    }
 
                     // temp = pieces[row][col];
                     // pieces[row][col] = pieces[startRow][startCol];
@@ -291,9 +305,14 @@ public class ChessBoard {
 
                     //makes [row][col] a valid move after checks
                     validMoves[row][col] = true;
+
+                    //if at least one valid move if found set hasValidMove to true
+                    hasValidMove = true;
                 }
             }
         }
+
+        return hasValidMove;
     }
 
     /**
@@ -732,9 +751,31 @@ public class ChessBoard {
 
     public boolean isCheckMate(boolean side){
 
+        if(side){
 
+            if(!isWhiteCheck) { return false; }
+        }
+        else {
 
-        return false;
+            if(!isBlackCheck) { return false; }
+        }
+
+        boolean canKingMove = setValidMoves(getKingRow(side), getKingCol(side));
+
+        boolean canKingBeSaved = false;
+
+        for(int row = 0; row < ARRAY_SIZE; row++) {
+
+            for(int col = 0; col < ARRAY_SIZE; col++) {
+
+                if(pieces[row][col] == null) { continue; }
+                if(pieces[row][col].isWhitePiece() != side) { continue; }
+
+                if(setValidMoves(row, col)) { canKingBeSaved = true; }
+            }
+        }
+
+        return !canKingMove && !canKingBeSaved;
     }
 
     /**

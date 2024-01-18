@@ -33,14 +33,13 @@ public class ChessUI extends JFrame implements ActionListener {
     /** Boolean for is user locks a piece to move */
     private boolean pieceChosen = false;
 
+    private boolean canPlay = true;
+
     /** User selected piece to move row */
     private int selectPieceRow;
 
     /** User selected piece to move column */
     private int selectPieceCol;
-
-    /** Piece Txt Value */
-    private static final int PIECE_TXT_SIZE = 20;
 
     /** RGB Value */
     private static final int RED_VALUE_1 = 225;
@@ -59,12 +58,6 @@ public class ChessUI extends JFrame implements ActionListener {
 
     /** RGB Value */
     private static final int BLUE_VALUE_2 = 27;
-
-    /** Top white side row of board */
-    private static final int WHITE_TOP_ROW = 6;
-
-    /** Bottom white side row of board */
-    private static final int WHITE_BOTTOM_ROW = 7;
 
     /** ChessUI Contructor */
     public ChessUI() {
@@ -131,6 +124,8 @@ public class ChessUI extends JFrame implements ActionListener {
      * @param e event that occurred
      */
     public void actionPerformed(ActionEvent e) {
+
+        if(!canPlay) { return; }
         
         //Iterates 2D buttons array to find the index for the pressed button
         for(int row = 0; row < GRID_SIZE; row++){
@@ -175,7 +170,18 @@ public class ChessUI extends JFrame implements ActionListener {
     private void markAvailable(int startRow, int startCol){
 
         //sets all valid moves by [row][col]
-        chessBoard.setValidMoves(startRow, startCol);
+        boolean hasValidMove = chessBoard.setValidMoves(startRow, startCol);
+
+        //mark selected piece
+        pieceChosen = true;
+        selectPieceRow = startRow;
+        selectPieceCol = startCol;
+
+        //the selected button is given a gray background and a lowered bevel border
+        buttons[startRow][startCol].setBackground(Color.GRAY);
+        buttons[startRow][startCol].setBorder(new BevelBorder(BevelBorder.LOWERED));
+
+        if(!hasValidMove) { return; }
 
         //iterates throught the buttons 2D array
         for(int row = 0; row < GRID_SIZE; row++){
@@ -191,20 +197,16 @@ public class ChessUI extends JFrame implements ActionListener {
                     buttons[row][col].setBackground(
                         new Color(0, GREEN_VALUE_1, 0));                    
                 }
-                else if(startRow == row && startCol == col){//marks selected piece
-                    pieceChosen = true;
-                    selectPieceRow = row;
-                    selectPieceCol = col;
-                }
+                // else if(startRow == row && startCol == col){//marks selected piece
+                //     pieceChosen = true;
+                //     selectPieceRow = row;
+                //     selectPieceCol = col;
+                // }
             }
         }
 
         //calls to check if a king is in check to mark it
-        isCheck();
-
-        //the selected button is given a gray background and a lowered bevel border
-        buttons[startRow][startCol].setBackground(Color.GRAY);
-        buttons[startRow][startCol].setBorder(new BevelBorder(BevelBorder.LOWERED));
+        //isCheck();        
     }
 
     private void unmark(){
@@ -235,7 +237,7 @@ public class ChessUI extends JFrame implements ActionListener {
         }
 
         //calls to check if a king is in check to mark it
-        isCheck();
+        //isCheck();
     }
 
     private void movePiece(int row, int col){
@@ -266,6 +268,9 @@ public class ChessUI extends JFrame implements ActionListener {
         chessBoard.resetAvailableMoves();
         //make it the next players turn after they have moved a piece
         isWhiteTurn = !isWhiteTurn;
+
+        //calls to check if a king is in check to mark it
+        isCheck();
     }
 
     private void isCheck(){
@@ -283,6 +288,11 @@ public class ChessUI extends JFrame implements ActionListener {
             buttons[kingRow][kingCol].setBackground(
                 new Color(GREEN_VALUE_1, 0, 0)//RED COLOR 
             );
+
+            //If White king is in checkmate call for game to end with black winning
+            if(chessBoard.isCheckMate(true)) {
+                gameWin(false);
+            }
         }
 
         if(chessBoard.isCheck(false)){//check black king is in check
@@ -295,27 +305,73 @@ public class ChessUI extends JFrame implements ActionListener {
             buttons[kingRow][kingCol].setBackground(
                 new Color(GREEN_VALUE_1, 0, 0)//RED COLOR 
             );
+
+            //If Black King is in checkmate call for game to end with white winning
+            if(chessBoard.isCheckMate(false)){
+                gameWin(true);
+            }
+        }
+    }
+
+    private void gameWin (boolean side){
+
+        //Show Dialog Box with Yes/No/Cancel option
+        int choice = JOptionPane.showConfirmDialog(null, String.format("%s Wins! Play Again? ", side ? "White" : "Black"));
+        
+        if(choice == JOptionPane.YES_OPTION){
+            resetBoard();
+        }
+        else if(choice == JOptionPane.NO_OPTION){
+            System.exit(1);
+        }        
+        else {
+            canPlay = false;
         }
     }
 
     /** Resets Game */
     private void resetBoard(){
 
+        //Resets turn to white and piece is not chosen on start
+        pieceChosen = false;
+        isWhiteTurn = true;
+
+        //makes new chessboard instance
         chessBoard = new ChessBoard();
 
+        boolean background = true;
         for(int row = 0; row < GRID_SIZE; row++){
 
             for(int col = 0; col < GRID_SIZE; col++){
-                buttons[row][col].setText(chessBoard.getName(row, col));
-                buttons[row][col].setForeground(Color.WHITE);
 
-                if(row == 0 || row == 1){
-                    buttons[row][col].setForeground(Color.BLACK);
+                //if piece at [row][col] has image, set the button to have an ImageIcon
+                if(chessBoard.getImage(row, col) != null){
+                    buttons[row][col].setIcon(new ImageIcon(chessBoard.getImage(row, col)));
                 }
-                else if(row == WHITE_TOP_ROW || row == WHITE_BOTTOM_ROW){
-                    buttons[row][col].setForeground(Color.WHITE);
+                else { //reset images
+                    buttons[row][col].setIcon(new ImageIcon());
                 }
+                //Align icon to center
+                buttons[row][col].setHorizontalTextPosition(SwingConstants.CENTER);
+                //buttons[row][col].setFont(new Font("Default", Font.BOLD, PIECE_TXT_SIZE));
+                //Add simple line border to each button
+                buttons[row][col].setBorder(new LineBorder(Color.BLACK, 1));
+                buttons[row][col].setFocusPainted(false); // remove focus box
+
+                //every other button is set to a color
+                if(background){
+                    buttons[row][col].setBackground(
+                        new Color(RED_VALUE_1, GREEN_VALUE_1, BLUE_VALUE_1));
+                }
+                else {
+                    buttons[row][col].setBackground(
+                        new Color(RED_VALUE_2, GREEN_VALUE_2, BLUE_VALUE_2));
+                }
+
+                background = !background;
             }
+
+            background = !background;
         }
     }
 
