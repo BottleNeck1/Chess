@@ -17,7 +17,7 @@ public class Queen extends Rook {
      */
     public Queen(int row, int col, boolean isWhitePiece){
         super(row, col, isWhitePiece);
-        this.name = "Q";
+        this.name = "Queen";
         this.whiteImgFile = new File("src/resources/WhiteQueen.png");
         this.blackImgFile = new File("src/resources/BlackQueen.png");
         this.row = row;

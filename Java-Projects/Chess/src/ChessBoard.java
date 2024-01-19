@@ -144,6 +144,7 @@ public class ChessBoard {
      * @param startCol selected piece column to check
      * @returns True if any valid move, otherwise return false
      * @throws IllegalArgumentException if row or col is out of bounds
+     * @return return true if at least one valid move, false if no valid moves
      */
     public boolean setValidMoves(int startRow, int startCol){
 
@@ -749,6 +750,11 @@ public class ChessBoard {
         return false;
     }
 
+    /**
+     * Checks if a king is checkmate
+     * @param side what king to check for
+     * @return true if king is in checkmate, else false
+     */
     public boolean isCheckMate(boolean side){
 
         if(side){
@@ -784,8 +790,8 @@ public class ChessBoard {
      * @return true if finds a spot that the king can move to, else false
      */
     public boolean canKingMove(boolean side){
-        int[] rowMovement = {0, 0, 1, 1, 1, -1, -1, -1};//0: Right 1: Left 2:Down-Right Diag 3:Down
-        int[] colMovement = {1, -1, 1, 0, -1, 1, 0, -1};//4:Down-Left 5:Up-Right 6: Up 7:Up-Left
+        int[] rowMovement = {0, 0, 1, 1, 1, -1, -1, -1}; //0: Right 1: Left 2:Down-Right Diag 3:Down
+        int[] colMovement = {1, -1, 1, 0, -1, 1, 0, -1}; //4:Down-Left 5:Up-Right 6: Up 7:Up-Left
 
         int kingRow = getKingRow(side);
         int kingCol = getKingCol(side);
@@ -825,10 +831,17 @@ public class ChessBoard {
         return blackKingCol;
     }
 
-    
+    /**
+     * Check if pawn can be promoted
+     * @param startRow current row
+     * @param startCol current col
+     * @param endRow potential row
+     * @param isWhiteSide what side the piece is on
+     * @return if pawn can be promoted return true, else return false
+     */
     public boolean canPromote(int startRow, int startCol, int endRow, boolean isWhiteSide){
 
-        if(pieces[startRow][startCol] instanceof Pawn == false){
+        if(!(pieces[startRow][startCol] instanceof Pawn)){
             return false;
         }
 
@@ -846,5 +859,37 @@ public class ChessBoard {
         }
 
         return false;
+    }
+
+    /**
+     * Promote a pawn to chosen piece
+     * @param type what piece to promote to
+     * @param row row to set
+     * @param col col to set
+     * @thorws IllegalArgumentException if type is invalid
+     */
+    public void promote(String type, int row, int col){
+
+        boolean isWhitePiece = pieces[row][col].isWhitePiece();
+        
+        switch(type) {
+            case "Queen":
+            pieces[row][col] = new Queen(row, col, isWhitePiece);
+            break;
+            case "Knight":
+            pieces[row][col] = new Knight(row, col, isWhitePiece);
+            break;
+            case "Bishop":
+            pieces[row][col] = new Bishop(row, col, isWhitePiece);
+            break;
+            case "Rook":
+            pieces[row][col] = new Rook(row, col, isWhitePiece);
+            break;
+            default:
+            throw new IllegalArgumentException("Invalid promotion.");
+        }
+    }
+
+    private void canCastle(boolean isWhiteSide){
     }
 }

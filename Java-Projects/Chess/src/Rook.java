@@ -11,7 +11,7 @@ import javax.imageio.ImageIO;
 public class Rook implements Piece {
     
     /** Name for piece */
-    protected String name = "R";
+    protected String name = "Rook";
 
     /** Row Position */
     protected int row;

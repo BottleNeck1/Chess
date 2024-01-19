@@ -17,7 +17,7 @@ public class Pawn extends Rook {
      */
     public Pawn(int row, int col, boolean isWhitePiece){
         super(row, col, isWhitePiece);
-        this.name = "P";
+        this.name = "Pawn";
         this.whiteImgFile = new File("src/resources/WhitePawn.png");
         this.blackImgFile = new File("src/resources/BlackPawn.png");
         this.row = row;

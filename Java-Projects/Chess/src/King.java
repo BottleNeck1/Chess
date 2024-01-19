@@ -17,7 +17,7 @@ public class King extends Rook {
      */
     public King(int row, int col, boolean isWhitePiece){
         super(row, col, isWhitePiece);
-        this.name = "K";
+        this.name = "King";
         this.whiteImgFile = new File("src/resources/WhiteKing.png");
         this.blackImgFile = new File("src/resources/BlackKing.png");
         this.row = row;
