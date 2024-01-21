@@ -47,12 +47,6 @@ public class ChessUI extends JFrame implements ActionListener{
     /** Menu Items */
     private JMenuItem queenItem, rookItem, knightItem, bishopItem;
 
-    /** Mouse X Position */
-    private int mouseX;
-
-    /** Mouse Y Position */
-    private int mouseY;
-
     /** RGB Value */
     private static final int RED_VALUE_1 = 225;
 
@@ -94,14 +88,6 @@ public class ChessUI extends JFrame implements ActionListener{
                 //Define a new button for the buttons array at [row][col]
                 buttons[row][col] = new JButton();
 
-                buttons[row][col].addMouseListener(new MouseAdapter() {
-                @Override 
-                public void mousePressed(MouseEvent e) {
-                    mouseX = e.getX();
-                    mouseY = e.getY();
-                }
-                });
-
                 //if piece at [row][col] has image, set the button to have an ImageIcon
                 if(chessBoard.getImage(row, col) != null){
                     buttons[row][col].setIcon(new ImageIcon(chessBoard.getImage(row, col)));
@@ -137,13 +123,50 @@ public class ChessUI extends JFrame implements ActionListener{
             background = !background;
         }       
 
+        //new pop up menu for promotion
         promoteMenu = new JPopupMenu();
 
-        queenItem = new JMenuItem("Queen");
-        rookItem = new JMenuItem("Rook");
-        bishopItem = new JMenuItem("Bishop");
-        knightItem = new JMenuItem("Knight");
+        Queen q = new Queen(0, 0, isWhiteTurn);
+        Rook r = new Rook(0, 0, isWhiteTurn);
+        Bishop b = new Bishop(0, 0, isWhiteTurn);
+        Knight n = new Knight(0, 0, isWhiteTurn);
 
+        // queenItem = new JMenuItem(q.getName(), new ImageIcon(q.getImage()));
+        // rookItem = new JMenuItem(r.getName(), new ImageIcon(r.getImage()));
+        // bishopItem = new JMenuItem(b.getName(), new ImageIcon(b.getImage()));
+        // knightItem = new JMenuItem(n.getName(), new ImageIcon(n.getImage()));
+
+        queenItem = new JMenuItem(new ImageIcon(q.getImage()));    
+        rookItem = new JMenuItem(new ImageIcon(r.getImage()));
+        bishopItem = new JMenuItem(new ImageIcon(b.getImage()));
+        knightItem = new JMenuItem(new ImageIcon(n.getImage()));
+
+        //add event to pop up menu items
+        queenItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                promote(q);
+            }
+        });
+
+        rookItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                promote(r);
+            }
+        });
+
+        bishopItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                promote(b);
+            }
+        });
+
+        knightItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                promote(n);
+            }
+        });
+        
+        //add menu items to pop-up menu
         promoteMenu.add(queenItem);
         promoteMenu.add(rookItem);
         promoteMenu.add(bishopItem);
@@ -289,10 +312,28 @@ public class ChessUI extends JFrame implements ActionListener{
         }
 
         //when moving a piece, given the target button the corresponding ImageIcon
-        if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
-            buttons[row][col].setIcon(
-                new ImageIcon(chessBoard.getImage(selectPieceRow, selectPieceCol)));
-            buttons[selectPieceRow][selectPieceCol].setIcon(null);
+        // if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
+        //     buttons[row][col].setIcon(
+        //         new ImageIcon(chessBoard.getImage(selectPieceRow, selectPieceCol)));
+        //     buttons[selectPieceRow][selectPieceCol].setIcon(null);
+        // }
+
+        //moves the piece in the piece 2D array is chessboard class
+        chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
+
+        //when moving a piece, re-do all icons in grid
+        for(int gridRow = 0; gridRow < GRID_SIZE; gridRow++){
+
+            for(int gridCol = 0; gridCol < GRID_SIZE; gridCol++){
+
+                if(chessBoard.getImage(gridRow, gridCol) != null){
+                    buttons[gridRow][gridCol].setIcon(
+                        new ImageIcon(chessBoard.getImage(gridRow, gridCol)));
+                }
+                else {
+                    buttons[gridRow][gridCol].setIcon(null);
+                }
+            }
         }
 
         // if(isWhiteTurn){
@@ -304,8 +345,7 @@ public class ChessUI extends JFrame implements ActionListener{
 
         //buttons[selectPieceRow][selectPieceCol].setText("");
 
-        //moves the piece in the piece 2D array is chessboard class
-        chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
+        
 
         //unmarks the marked spaces for a new turn
         unmark();
@@ -371,6 +411,16 @@ public class ChessUI extends JFrame implements ActionListener{
         else {
             canPlay = false;
         }
+    }
+
+    private void promote(Piece p){
+
+        String type = p.getName();
+
+        int newRow = isWhiteTurn ? selectPieceRow + 1 : selectPieceRow - 1;
+
+        buttons[newRow][selectPieceCol].setIcon(new ImageIcon(p.getImage()));
+        chessBoard.promote(type, newRow, selectPieceCol);
     }
 
     /** Resets Game */
