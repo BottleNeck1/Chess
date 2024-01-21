@@ -47,6 +47,12 @@ public class ChessBoard {
     /** Is Black King Under Check */
     private boolean isBlackCheck;
 
+    // private boolean isCastl
+
+    private Rook[] whiteRooks;
+
+    private Rook[] blackRooks;
+
     /** ChessBoard Constructor */
     public ChessBoard(){
 
@@ -69,10 +75,17 @@ public class ChessBoard {
         }
 
         //sets Rooks
+        blackRooks = new Rook[2];
         pieces[0][0] = new Rook(0, 0, false);
         pieces[0][SEVEN_POS] = new Rook(0, SEVEN_POS, false);
-        pieces[SEVEN_POS][0] = new Rook(SEVEN_POS, 0, true);
+        blackRooks[0] = (Rook)pieces[0][0];
+        blackRooks[1] = (Rook)pieces[0][SEVEN_POS];
+
+        whiteRooks = new Rook[2];
+        pieces[SEVEN_POS][0] = new Rook(SEVEN_POS, 0, true);        
         pieces[SEVEN_POS][SEVEN_POS] = new Rook(SEVEN_POS, SEVEN_POS, true);
+        whiteRooks[0] = (Rook)pieces[SEVEN_POS][0];
+        whiteRooks[1] = (Rook)pieces[SEVEN_POS][SEVEN_POS];
 
         //Sets Knights
         pieces[0][1] = new Knight(0, 1, false);
@@ -144,6 +157,7 @@ public class ChessBoard {
      * @param startCol selected piece column to check
      * @returns True if any valid move, otherwise return false
      * @throws IllegalArgumentException if row or col is out of bounds
+     * @return return true if at least one valid move, false if no valid moves
      */
     public boolean setValidMoves(int startRow, int startCol){
 
@@ -386,12 +400,18 @@ public class ChessBoard {
             return p.canAttack(potentialRow, potentialCol);
         }
 
+        if(currentPiece instanceof King && canCastle(currentPiece.isWhitePiece(), potentialRow, potentialCol)){
+            return true;
+        }
+
         //if potentionalRow/Col is a valid move and it is unobstructed, returns true
-        return currentPiece.canMove(potentialRow, potentialCol) &&
-            isUnobstructed(currentPiece, potentialRow, potentialCol);
+        return (currentPiece.canMove(potentialRow, potentialCol) &&
+            isUnobstructed(currentPiece, potentialRow, potentialCol, false));
     }
 
-    private boolean isUnobstructed(Piece p, int endRow, int endCol){
+    private boolean isUnobstructed(Piece p, int endRow, int endCol, boolean castling){
+
+        //TODO: FIX KING CASTLING WHEN OBSTRUCTED
 
         //gets starting location
         int startRow = p.getRow();
@@ -404,8 +424,17 @@ public class ChessBoard {
         if(p instanceof Knight){ //Knight does not get obstructed
             return true;
         }
-        else if(p instanceof King){//King does not get obstructed (only moves 1 unit)
-            return true;            
+        else if(p instanceof King && !castling){//King does not get obstructed (only moves 1 unit)
+
+            // if(castling){//check king horizontal movement for castling
+
+            // }
+            // else {//King does not get obstructed (only moves 1 unit)
+            //     return true;            
+            // }
+
+            return true;
+
         }
         else if(p instanceof Bishop){ //checks Bishop diagonal movements for occupied space
 
@@ -541,7 +570,7 @@ public class ChessBoard {
                 }
             }
         }
-        else if(p instanceof Rook){ ///Checks rook horizonal or vertical movemet for 
+        else if(p instanceof Rook || castling){ ///Checks rook horizonal or vertical movemet for 
                                     //occupied space
             
             if(startRow == endRow){
@@ -692,21 +721,63 @@ public class ChessBoard {
             throw new IllegalArgumentException("Invalid new row or col");
         }
 
+        boolean isWhitePiece = pieces[currentRow][currentCol].isWhitePiece();
+        boolean castling = false;
+
+        
+
         //sets king position variables
         if(pieces[currentRow][currentCol] instanceof King){
 
-            if(pieces[currentRow][currentCol].isWhitePiece()){
+            if(canCastle(isWhitePiece, newRow, newCol)){
+
+                castling = true;
+                boolean isMovingRight = isMovingDown(currentCol, newCol);
+
+                //make king make thier first move
+                pieces[currentRow][currentCol].firstMove();
+
+                //make rook make their first move
+                pieces[isWhitePiece ? SEVEN_POS : 0][isMovingRight ? SEVEN_POS : 0].firstMove();
+
+                //set rook position and move it
+                pieces[isWhitePiece ? SEVEN_POS : 0][isMovingRight ? SEVEN_POS : 0].setPosition(
+                    isWhitePiece ? SEVEN_POS : 0, isMovingRight ? FIVE_POS : 3);
+
+                pieces[isWhitePiece ? SEVEN_POS : 0][isMovingRight ? FIVE_POS : 3] = 
+                    pieces[isWhitePiece ? SEVEN_POS : 0][isMovingRight ? SEVEN_POS : 0];
+                pieces[isWhitePiece ? SEVEN_POS : 0][isMovingRight ? SEVEN_POS : 0] = null;
+
+                //set king position
+                pieces[isWhitePiece ? SEVEN_POS : 0][FOUR_POS].setPosition(
+                    isWhitePiece ? SEVEN_POS : 0, isMovingRight ? SIX_POS : 2);
+
+                pieces[isWhitePiece ? SEVEN_POS : 0][isMovingRight ? SIX_POS : 2] = 
+                    pieces[isWhitePiece ? SEVEN_POS : 0][FOUR_POS];
+                pieces[isWhitePiece ? SEVEN_POS : 0][FOUR_POS] = null;
+
+                newCol = isMovingRight ? SIX_POS : 2;
+            
+            }
+        
+            if(isWhitePiece){
                 whiteKingRow = newRow;
                 whiteKingCol = newCol;
             }
             else {
                 blackKingRow = newRow;
                 blackKingCol = newCol;
-            }
+            }        
         }
 
-        //move the selected piece to new space
+        if(castling){
+            return;
+        }
+
+        //make piece make their first move is havnt already
         pieces[currentRow][currentCol].firstMove();
+
+        //move the selected piece to new space
         pieces[currentRow][currentCol].setPosition(newRow, newCol);
         pieces[newRow][newCol] = pieces[currentRow][currentCol];
         pieces[currentRow][currentCol] = null;
@@ -749,6 +820,11 @@ public class ChessBoard {
         return false;
     }
 
+    /**
+     * Checks if a king is checkmate
+     * @param side what king to check for
+     * @return true if king is in checkmate, else false
+     */
     public boolean isCheckMate(boolean side){
 
         if(side){
@@ -784,8 +860,8 @@ public class ChessBoard {
      * @return true if finds a spot that the king can move to, else false
      */
     public boolean canKingMove(boolean side){
-        int[] rowMovement = {0, 0, 1, 1, 1, -1, -1, -1};//0: Right 1: Left 2:Down-Right Diag 3:Down
-        int[] colMovement = {1, -1, 1, 0, -1, 1, 0, -1};//4:Down-Left 5:Up-Right 6: Up 7:Up-Left
+        int[] rowMovement = {0, 0, 1, 1, 1, -1, -1, -1}; //0: Right 1: Left 2:Down-Right Diag 3:Down
+        int[] colMovement = {1, -1, 1, 0, -1, 1, 0, -1}; //4:Down-Left 5:Up-Right 6: Up 7:Up-Left
 
         int kingRow = getKingRow(side);
         int kingCol = getKingCol(side);
@@ -825,10 +901,17 @@ public class ChessBoard {
         return blackKingCol;
     }
 
-    
+    /**
+     * Check if pawn can be promoted
+     * @param startRow current row
+     * @param startCol current col
+     * @param endRow potential row
+     * @param isWhiteSide what side the piece is on
+     * @return if pawn can be promoted return true, else return false
+     */
     public boolean canPromote(int startRow, int startCol, int endRow, boolean isWhiteSide){
 
-        if(pieces[startRow][startCol] instanceof Pawn == false){
+        if(!(pieces[startRow][startCol] instanceof Pawn)){
             return false;
         }
 
@@ -846,5 +929,97 @@ public class ChessBoard {
         }
 
         return false;
+    }
+
+    /**
+     * Promote a pawn to chosen piece
+     * @param type what piece to promote to
+     * @param row row to set
+     * @param col col to set
+     * @thorws IllegalArgumentException if type is invalid
+     */
+    public void promote(String type, int row, int col){
+
+        boolean isWhitePiece = pieces[row][col].isWhitePiece();
+        
+        switch(type) {
+            case "Queen":
+            pieces[row][col] = new Queen(row, col, isWhitePiece);
+            break;
+            case "Knight":
+            pieces[row][col] = new Knight(row, col, isWhitePiece);
+            break;
+            case "Bishop":
+            pieces[row][col] = new Bishop(row, col, isWhitePiece);
+            break;
+            case "Rook":
+            pieces[row][col] = new Rook(row, col, isWhitePiece);
+            break;
+            default:
+            throw new IllegalArgumentException("Invalid promotion.");
+        }
+    }
+
+    /**
+     * Returns true is the move can be a possible castle and if it is
+     * not blocked by other pieces
+     * @param isWhiteSide side the piece is on
+     * @param moveRow piece row
+     * @param moveCol piece col
+     * @return true is valid castle move, else false
+     */
+    private boolean canCastle(boolean isWhiteSide, int moveRow, int moveCol){
+
+        if(isWhiteSide ? !whiteRooks[0].isFirstMove && !whiteRooks[1].isFirstMove : 
+            !blackRooks[0].isFirstMove && !blackRooks[1].isFirstMove){
+                return false;
+        }//checks if rooks have moved, if they did return false
+
+        King k = (King)pieces[isWhiteSide ? whiteKingRow : blackKingRow][isWhiteSide ? whiteKingCol : blackKingCol];
+        
+        if(k.getRow() != moveRow){
+            return false;
+        }
+
+        if(k.isWhitePiece()){
+            if(isWhiteCheck){
+                return false;
+            }
+        }
+        else {
+            if(isBlackCheck){
+                return false;
+            }
+        }
+
+        if(isMovingRight(k.getCol(), moveCol)){
+
+            for(int col = k.getCol(); col < SEVEN_POS; col++){
+
+                if(col == k.getCol()){
+                    continue;
+                }
+
+                if(pieces[k.getRow()][col] != null){
+                    return false;
+                }
+            }
+        }
+        else {
+
+            for(int col = k.getCol(); col > 0; col--){
+
+                if(col == k.getCol()){
+                    continue;
+                }
+
+                if(pieces[k.getRow()][col] != null){
+                    return false;
+                }
+            }
+        }
+
+        return k.isPossibleCastle(moveRow, moveCol) && isUnobstructed(k, moveRow, moveCol, true) &&
+            pieces[moveRow][moveCol] == null;   
     }
 }

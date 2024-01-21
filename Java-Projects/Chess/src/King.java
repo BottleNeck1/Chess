@@ -17,7 +17,7 @@ public class King extends Rook {
      */
     public King(int row, int col, boolean isWhitePiece){
         super(row, col, isWhitePiece);
-        this.name = "K";
+        this.name = "King";
         this.whiteImgFile = new File("src/resources/WhiteKing.png");
         this.blackImgFile = new File("src/resources/BlackKing.png");
         this.row = row;
@@ -48,5 +48,33 @@ public class King extends Rook {
             (row - 1 == moveRow && col + 1 == moveCol) ||
             (row - 1 == moveRow && col - 1 == moveCol)
             );
+    }
+
+    /**
+     * Checks moveRow and moveCol for possible castle move
+     * @param moveRow row to check
+     * @param moveCol column to check
+     * @return returns false if not first move or rows dont match or if 
+     * not if one of the possible castle columns, else return true
+     */
+    public boolean isPossibleCastle(int moveRow, int moveCol){
+
+        if(row != moveRow || !isFirstMove){//if not is same row or not first move, cant castle
+            return false;
+        }
+
+        int[] castleCol = {1, 2, 6};//possible castle columns for both sides
+
+        for(int i = 0; i < castleCol.length; i++){
+            if(castleCol[i] == moveCol){
+                break;//moveCol is one of the possible castle cols
+            }
+
+            if(i == 2){//return false if moveCol doesnt equal any of possible castles cols
+                return false;
+            }
+        }
+
+        return true;
     }
 }
