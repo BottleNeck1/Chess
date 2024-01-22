@@ -47,10 +47,10 @@ public class ChessBoard {
     /** Is Black King Under Check */
     private boolean isBlackCheck;
 
-    // private boolean isCastl
-
+    /** White Rooks */
     private Rook[] whiteRooks;
 
+    /** Black Rooks */
     private Rook[] blackRooks;
 
     /** ChessBoard Constructor */
@@ -157,6 +157,7 @@ public class ChessBoard {
      * @param startCol selected piece column to check
      * @returns True if any valid move, otherwise return false
      * @throws IllegalArgumentException if row or col is out of bounds
+     * @return true if at least one valid move, else false
      */
     public boolean setValidMoves(int startRow, int startCol){
 
@@ -172,7 +173,7 @@ public class ChessBoard {
 
             for(int col = 0; col < ARRAY_SIZE; col++){
 
-                if(canMove(startRow, startCol, row, col)){//peice can move to [row][col]
+                if(canMove(startRow, startCol, row, col, true)){//peice can move to [row][col]
 
                     //finds if the piece to move is white or black
                     boolean isWhitePiece = pieces[startRow][startCol].isWhitePiece();
@@ -356,7 +357,7 @@ public class ChessBoard {
      * @throws IllegalArgumentException if potential row or col is out of bounds
      */
     public boolean canMove(
-        int currentRow, int currentCol, int potentialRow, int potentialCol){
+        int currentRow, int currentCol, int potentialRow, int potentialCol, boolean castling){
 
         if(currentRow < 0 || currentRow >= ARRAY_SIZE || 
             currentCol < 0 || currentCol >= ARRAY_SIZE){
@@ -399,7 +400,7 @@ public class ChessBoard {
             return p.canAttack(potentialRow, potentialCol);
         }
 
-        if(currentPiece instanceof King && canCastle(currentPiece.isWhitePiece(), potentialRow, potentialCol)){
+        if(castling && currentPiece instanceof King && canCastle(currentPiece.isWhitePiece(), potentialRow, potentialCol)){
             return true;
         }
 
@@ -409,8 +410,6 @@ public class ChessBoard {
     }
 
     private boolean isUnobstructed(Piece p, int endRow, int endCol, boolean castling){
-
-        //TODO: FIX KING CASTLING WHEN OBSTRUCTED
 
         //gets starting location
         int startRow = p.getRow();
@@ -424,16 +423,7 @@ public class ChessBoard {
             return true;
         }
         else if(p instanceof King && !castling){//King does not get obstructed (only moves 1 unit)
-
-            // if(castling){//check king horizontal movement for castling
-
-            // }
-            // else {//King does not get obstructed (only moves 1 unit)
-            //     return true;            
-            // }
-
             return true;
-
         }
         else if(p instanceof Bishop){ //checks Bishop diagonal movements for occupied space
 
@@ -728,10 +718,10 @@ public class ChessBoard {
         //sets king position variables
         if(pieces[currentRow][currentCol] instanceof King){
 
-            if(canCastle(isWhitePiece, newRow, newCol)){
+            if(canCastle(isWhitePiece, newRow, fixCol)){
 
                 castling = true;
-                boolean isMovingRight = isMovingDown(currentCol, newCol);
+                boolean isMovingRight = isMovingDown(currentCol, fixCol);
 
                 //make king make thier first move
                 pieces[currentRow][currentCol].firstMove();
@@ -761,11 +751,11 @@ public class ChessBoard {
         
             if(isWhitePiece){
                 whiteKingRow = newRow;
-                whiteKingCol = newCol;
+                whiteKingCol = fixCol;
             }
             else {
                 blackKingRow = newRow;
-                blackKingCol = newCol;
+                blackKingCol = fixCol;
             }        
         }
 
@@ -803,7 +793,7 @@ public class ChessBoard {
 
             for(int col = 0; col < ARRAY_SIZE; col++){
 
-                if(canMove(row, col, getKingRow(side), getKingCol(side))) { 
+                if(canMove(row, col, getKingRow(side), getKingCol(side), false)) { 
                     if(side){
                         isWhiteCheck = true;
                     }
@@ -868,7 +858,7 @@ public class ChessBoard {
         //Checks if king has any available move
         for(int i = 0; i < rowMovement.length; i++){
 
-            if(canMove(kingRow, kingCol, rowMovement[i], colMovement[i])){
+            if(canMove(kingRow, kingCol, rowMovement[i], colMovement[i], false)){
                 return true;
             }
         }
@@ -979,16 +969,18 @@ public class ChessBoard {
             return false;
         }
 
-        if(k.isWhitePiece()){
-            if(isWhiteCheck){
-                return false;
-            }
-        }
-        else {
-            if(isBlackCheck){
-                return false;
-            }
-        }
+        // if(k.isWhitePiece()){
+        //     if(isWhiteCheck){
+        //         return false;
+        //     }
+        // }
+        // else {
+        //     if(isBlackCheck){
+        //         return false;
+        //     }
+        // }
+        Piece temp;
+        boolean isFalse = false;
 
         if(isMovingRight(k.getCol(), moveCol)){
 
@@ -996,6 +988,31 @@ public class ChessBoard {
 
                 if(col == k.getCol()){
                     continue;
+                }
+
+                temp = pieces[k.getRow()][col];
+                pieces[k.getRow()][col] = pieces[k.getRow()][k.getCol()];
+                pieces[k.getRow()][k.getCol()] = null;
+                
+
+                if(k.isWhitePiece()){
+                    
+                    if(isCheck(true)){
+                        isFalse = true;
+                    }
+                }
+                else {
+
+                    if(isCheck(false)){
+                        isFalse = true;
+                    }
+                }
+
+                pieces[k.getRow()][k.getCol()] = pieces[k.getRow()][col];
+                pieces[k.getRow()][col] = temp;
+
+                if(isFalse){
+                    return false;
                 }
 
                 if(pieces[k.getRow()][col] != null){
@@ -1009,6 +1026,31 @@ public class ChessBoard {
 
                 if(col == k.getCol()){
                     continue;
+                }
+
+                temp = pieces[k.getRow()][col];
+                pieces[k.getRow()][col] = pieces[k.getRow()][k.getCol()];
+                pieces[k.getRow()][k.getCol()] = null;
+                
+
+                if(k.isWhitePiece()){
+                    
+                    if(isCheck(true)){
+                        isFalse = true;
+                    }
+                }
+                else {
+
+                    if(isCheck(false)){
+                        isFalse = true;
+                    }
+                }
+
+                pieces[k.getRow()][k.getCol()] = pieces[k.getRow()][col];
+                pieces[k.getRow()][col] = temp;
+
+                if(isFalse){
+                    return false;
                 }
 
                 if(pieces[k.getRow()][col] != null){

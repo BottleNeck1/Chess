@@ -63,11 +63,11 @@ public class King extends Rook {
             return false;
         }
 
-        int[] castleCol = {1, 2, 6};//possible castle columns for both sides
+        int[] castleCol = {1, 2, 6}; //possible castle columns for both sides
 
         for(int i = 0; i < castleCol.length; i++){
             if(castleCol[i] == moveCol){
-                break;//moveCol is one of the possible castle cols
+                break; //moveCol is one of the possible castle cols
             }
 
             if(i == 2){//return false if moveCol doesnt equal any of possible castles cols
