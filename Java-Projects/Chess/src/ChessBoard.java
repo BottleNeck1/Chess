@@ -723,7 +723,7 @@ public class ChessBoard {
         boolean isWhitePiece = pieces[currentRow][currentCol].isWhitePiece();
         boolean castling = false;
 
-        
+        int fixCol = newCol;
 
         //sets king position variables
         if(pieces[currentRow][currentCol] instanceof King){
@@ -755,7 +755,7 @@ public class ChessBoard {
                     pieces[isWhitePiece ? SEVEN_POS : 0][FOUR_POS];
                 pieces[isWhitePiece ? SEVEN_POS : 0][FOUR_POS] = null;
 
-                newCol = isMovingRight ? SIX_POS : 2;
+                fixCol = isMovingRight ? SIX_POS : 2;
             
             }
         
@@ -777,8 +777,8 @@ public class ChessBoard {
         pieces[currentRow][currentCol].firstMove();
 
         //move the selected piece to new space
-        pieces[currentRow][currentCol].setPosition(newRow, newCol);
-        pieces[newRow][newCol] = pieces[currentRow][currentCol];
+        pieces[currentRow][currentCol].setPosition(newRow, fixCol);
+        pieces[newRow][fixCol] = pieces[currentRow][currentCol];
         pieces[currentRow][currentCol] = null;
     }
 
@@ -971,7 +971,7 @@ public class ChessBoard {
         if(isWhiteSide ? !whiteRooks[0].isFirstMove && !whiteRooks[1].isFirstMove : 
             !blackRooks[0].isFirstMove && !blackRooks[1].isFirstMove){
                 return false;
-        }//checks if rooks have moved, if they did return false
+        } //checks if rooks have moved, if they did return false
 
         King k = (King)pieces[isWhiteSide ? whiteKingRow : blackKingRow][isWhiteSide ? whiteKingCol : blackKingCol];
         
@@ -1018,7 +1018,6 @@ public class ChessBoard {
         }
 
         return k.isPossibleCastle(moveRow, moveCol) && isUnobstructed(k, moveRow, moveCol, true) &&
-            pieces[moveRow][moveCol] == null;   
->>>>>>> 5a370cf2f8d2432a6b5cee20be6f8ce98593bbbf
+            pieces[moveRow][moveCol] == null;
     }
 }
