@@ -984,11 +984,7 @@ public class ChessBoard {
 
         if(isMovingRight(k.getCol(), moveCol)){
 
-            for(int col = k.getCol(); col < SEVEN_POS; col++){
-
-                if(col == k.getCol()){
-                    continue;
-                }
+            for(int col = k.getCol() + 1; col < SEVEN_POS; col++){
 
                 temp = pieces[k.getRow()][col];
                 pieces[k.getRow()][col] = pieces[k.getRow()][k.getCol()];
@@ -1022,11 +1018,7 @@ public class ChessBoard {
         }
         else {
 
-            for(int col = k.getCol(); col > 0; col--){
-
-                if(col == k.getCol()){
-                    continue;
-                }
+            for(int col = k.getCol() - 1; col > 0; col--){
 
                 temp = pieces[k.getRow()][col];
                 pieces[k.getRow()][col] = pieces[k.getRow()][k.getCol()];
