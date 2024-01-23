@@ -58,6 +58,14 @@ public class Rook implements Piece {
         this.isFirstMove = false;
     }
 
+    /** 
+     * Returns isFirstMove
+     * @return isFirstMove
+     */
+    public boolean isFirstMove(){
+        return isFirstMove;
+    }
+
     /**
      * Get the name for object
      * @return static name

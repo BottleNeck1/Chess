@@ -1,7 +1,16 @@
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
@@ -10,7 +19,7 @@ import javax.swing.border.LineBorder;
  * 
  * @author Dvid Martinez
  */
-public class ChessUI extends JFrame implements ActionListener{
+public class ChessUI extends JFrame implements ActionListener {
 
     /** Grid Board Size */
     private static final int GRID_SIZE = 8;
@@ -33,6 +42,7 @@ public class ChessUI extends JFrame implements ActionListener{
     /** Boolean for is user locks a piece to move */
     private boolean pieceChosen = false;
 
+    /** Can user play */
     private boolean canPlay = true;
 
     /** User selected piece to move row */
@@ -297,7 +307,7 @@ public class ChessUI extends JFrame implements ActionListener{
         }
 
         //calls to check if a king is in check to mark it
-        //isCheck();
+        isCheck();
     }
 
     private void movePiece(int row, int col){
@@ -312,28 +322,10 @@ public class ChessUI extends JFrame implements ActionListener{
         }
 
         //when moving a piece, given the target button the corresponding ImageIcon
-        // if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
-        //     buttons[row][col].setIcon(
-        //         new ImageIcon(chessBoard.getImage(selectPieceRow, selectPieceCol)));
-        //     buttons[selectPieceRow][selectPieceCol].setIcon(null);
-        // }
-
-        //moves the piece in the piece 2D array is chessboard class
-        chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
-
-        //when moving a piece, re-do all icons in grid
-        for(int gridRow = 0; gridRow < GRID_SIZE; gridRow++){
-
-            for(int gridCol = 0; gridCol < GRID_SIZE; gridCol++){
-
-                if(chessBoard.getImage(gridRow, gridCol) != null){
-                    buttons[gridRow][gridCol].setIcon(
-                        new ImageIcon(chessBoard.getImage(gridRow, gridCol)));
-                }
-                else {
-                    buttons[gridRow][gridCol].setIcon(null);
-                }
-            }
+        if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
+            buttons[row][col].setIcon(
+                new ImageIcon(chessBoard.getImage(selectPieceRow, selectPieceCol)));
+            buttons[selectPieceRow][selectPieceCol].setIcon(null);
         }
 
         // if(isWhiteTurn){
@@ -345,7 +337,8 @@ public class ChessUI extends JFrame implements ActionListener{
 
         //buttons[selectPieceRow][selectPieceCol].setText("");
 
-        
+        //moves the piece in the piece 2D array is chessboard class
+        chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
 
         //unmarks the marked spaces for a new turn
         unmark();

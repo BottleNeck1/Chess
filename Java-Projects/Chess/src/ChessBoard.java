@@ -352,6 +352,7 @@ public class ChessBoard {
      * @param currentCol current column
      * @param potentialRow new row 
      * @param potentialCol new column 
+     * @param castling check for castling
      * @return true if objects canMove method returns true, else returns false
      * @throws IllegalArgumentException if current row or col is out of bounds
      * @throws IllegalArgumentException if potential row or col is out of bounds
@@ -789,23 +790,54 @@ public class ChessBoard {
         }
 
         //if the selected piece can move to king spot, return true
+        // for(int row = 0; row < ARRAY_SIZE; row++){
+
+        //     for(int col = 0; col < ARRAY_SIZE; col++){
+
+        //         if(canMove(row, col, getKingRow(side), getKingCol(side), false)) { 
+        //             if(side){
+        //                 isWhiteCheck = true;
+        //             }
+        //             else {
+        //                 isBlackCheck = true;
+        //             }
+        //             return true; 
+        //         }
+        //     }
+        // }
+
+        if(canAttackKing(side)){
+
+            if(side){
+                isWhiteCheck = true;
+            }
+            else{
+                isBlackCheck = true;
+            }
+            return true;
+        }
+
+        //if cant move to king, return false
+        return false;
+    }
+
+    /**
+     * Helper method for isCheck
+     * @param side what side to check for
+     * @return true is the king can be attacked resulting in check, else false
+     */
+    public boolean canAttackKing(boolean side){
+        //if the selected piece can move to king spot, return true
         for(int row = 0; row < ARRAY_SIZE; row++){
 
             for(int col = 0; col < ARRAY_SIZE; col++){
 
-                if(canMove(row, col, getKingRow(side), getKingCol(side), false)) { 
-                    if(side){
-                        isWhiteCheck = true;
-                    }
-                    else {
-                        isBlackCheck = true;
-                    }
+                if(canMove(row, col, getKingRow(side), getKingCol(side), false)) {
                     return true; 
                 }
             }
         }
 
-        //if cant move to king, return false
         return false;
     }
 
@@ -958,14 +990,11 @@ public class ChessBoard {
      */
     private boolean canCastle(boolean isWhiteSide, int moveRow, int moveCol){
 
-        if(isWhiteSide ? !whiteRooks[0].isFirstMove && !whiteRooks[1].isFirstMove : 
-            !blackRooks[0].isFirstMove && !blackRooks[1].isFirstMove){
-                return false;
-        } //checks if rooks have moved, if they did return false
-
         King k = (King)pieces[isWhiteSide ? whiteKingRow : blackKingRow][isWhiteSide ? whiteKingCol : blackKingCol];
+        int startRow = k.getRow();
+        int startCol = k.getCol();
         
-        if(k.getRow() != moveRow){
+        if(startRow != moveRow){
             return false;
         }
 
@@ -984,28 +1013,44 @@ public class ChessBoard {
 
         if(isMovingRight(k.getCol(), moveCol)){
 
-            for(int col = k.getCol() + 1; col < SEVEN_POS; col++){
+            if(isWhiteSide ? !whiteRooks[1].isFirstMove() : !blackRooks[1].isFirstMove()){
+                return false;
+            } //checks if rooks have moved, if they did return false
 
-                temp = pieces[k.getRow()][col];
-                pieces[k.getRow()][col] = pieces[k.getRow()][k.getCol()];
-                pieces[k.getRow()][k.getCol()] = null;
-                
+            for(int col = k.getCol() + 1; col <= moveCol; col++){
 
-                if(k.isWhitePiece()){
+                //temp stores info from pieces[row][col]
+                temp = pieces[startRow][col];
+
+                //moves the King to the selected spot
+                pieces[startRow][col] = pieces[startRow][startCol];
+                pieces[startRow][startCol] = null;
+
+                if(isWhiteSide){//white side
                     
-                    if(isCheck(true)){
+                    whiteKingRow = startRow;
+                    whiteKingCol = col;
+
+                    if(canAttackKing(true)){//if when the kings moves and it is now in check
+                        isFalse = true; //it is invalid
+                    }
+                    whiteKingRow = startRow;
+                    whiteKingCol = startCol;
+                }
+                else {//black side
+                    blackKingRow = startRow;
+                    blackKingCol = col;
+
+                    if(canAttackKing(false)){
                         isFalse = true;
                     }
-                }
-                else {
-
-                    if(isCheck(false)){
-                        isFalse = true;
-                    }
+                    blackKingRow = startRow;
+                    blackKingCol = startCol;
                 }
 
-                pieces[k.getRow()][k.getCol()] = pieces[k.getRow()][col];
-                pieces[k.getRow()][col] = temp;
+                //resets the kings position to original spot
+                pieces[startRow][startCol] = pieces[startRow][col];
+                pieces[startRow][col] = temp;
 
                 if(isFalse){
                     return false;
@@ -1018,28 +1063,44 @@ public class ChessBoard {
         }
         else {
 
-            for(int col = k.getCol() - 1; col > 0; col--){
+            if(isWhiteSide ? !whiteRooks[0].isFirstMove() : !blackRooks[0].isFirstMove()){
+                return false;
+            } //checks if rooks have moved, if they did return false
 
-                temp = pieces[k.getRow()][col];
-                pieces[k.getRow()][col] = pieces[k.getRow()][k.getCol()];
-                pieces[k.getRow()][k.getCol()] = null;
-                
+            for(int col = k.getCol() - 1; col >= moveCol; col--){
 
-                if(k.isWhitePiece()){
+                //temp stores info from pieces[row][col]
+                temp = pieces[startRow][col];
+
+                //moves the King to the selected spot
+                pieces[startRow][col] = pieces[startRow][startCol];
+                pieces[startRow][startCol] = null;
+
+                if(isWhiteSide){//white side
                     
-                    if(isCheck(true)){
+                    whiteKingRow = startRow;
+                    whiteKingCol = col;
+
+                    if(canAttackKing(true)){//if when the kings moves and it is now in check
+                        isFalse = true; //it is invalid
+                    }
+                    whiteKingRow = startRow;
+                    whiteKingCol = startCol;
+                }
+                else {//black side
+                    blackKingRow = startRow;
+                    blackKingCol = col;
+
+                    if(canAttackKing(false)){
                         isFalse = true;
                     }
-                }
-                else {
-
-                    if(isCheck(false)){
-                        isFalse = true;
-                    }
+                    blackKingRow = startRow;
+                    blackKingCol = startCol;
                 }
 
-                pieces[k.getRow()][k.getCol()] = pieces[k.getRow()][col];
-                pieces[k.getRow()][col] = temp;
+                //resets the kings position to original spot
+                pieces[startRow][startCol] = pieces[startRow][col];
+                pieces[startRow][col] = temp;
 
                 if(isFalse){
                     return false;
