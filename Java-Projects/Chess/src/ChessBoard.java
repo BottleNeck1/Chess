@@ -841,41 +841,46 @@ public class ChessBoard {
         return false;
     }
 
-    // public void isKingInDanger(int kingRow, int kingCol, int ){
+    public boolean isKingInDanger(int kingRow, int kingCol, int moveRow, int moveCol){
 
-    //     //temp stores info from pieces[row][col]
-    //     temp = pieces[startRow][col];
+        //temp stores info from pieces[row][col]
+        Piece temp = pieces[moveRow][moveCol];
 
-    //     //moves the King to the selected spot
-    //     pieces[startRow][col] = pieces[startRow][startCol];
-    //     pieces[startRow][startCol] = null;
+        boolean isWhiteSide = pieces[kingRow][kingCol].isWhitePiece();
+        boolean rtn = false;
 
-    //     if(isWhiteSide){//white side
+        //moves the King to the selected spot
+        pieces[moveRow][moveCol] = pieces[kingRow][kingRow];
+        pieces[kingRow][kingRow] = null;
+
+        if(isWhiteSide){//white side
             
-    //         whiteKingRow = startRow;
-    //         whiteKingCol = col;
+            whiteKingRow = moveRow;
+            whiteKingCol = moveCol;
 
-    //         if(canAttackKing(true)){//if when the kings moves and it is now in check
-    //             isFalse = true; //it is invalid
-    //         }
-    //         whiteKingRow = startRow;
-    //         whiteKingCol = startCol;
-    //     }
-    //     else {//black side
-    //         blackKingRow = startRow;
-    //         blackKingCol = col;
+            if(canAttackKing(true)){//if when the kings moves and it is now in check
+                rtn = true; //it is invalid
+            }
+            whiteKingRow = kingRow;
+            whiteKingCol = kingCol;
+        }
+        else {//black side
+            blackKingRow = moveRow;
+            blackKingCol = moveCol;
 
-    //         if(canAttackKing(false)){
-    //             isFalse = true;
-    //         }
-    //         blackKingRow = startRow;
-    //         blackKingCol = startCol;
-    //     }
+            if(canAttackKing(false)){
+                rtn = true;
+            }
+            blackKingRow = kingRow;
+            blackKingCol = kingCol;
+        }
 
-    //     //resets the kings position to original spot
-    //     pieces[startRow][startCol] = pieces[startRow][col];
-    //     pieces[startRow][col] = temp;
-    // }
+        //resets the kings position to original spot
+        pieces[kingRow][kingRow] = pieces[moveRow][moveCol];
+        pieces[moveRow][moveCol] = temp;
+
+        return rtn;
+    }
 
     /**
      * Checks if a king is checkmate
@@ -1044,8 +1049,8 @@ public class ChessBoard {
         //         return false;
         //     }
         // }
-        Piece temp;
-        boolean isFalse = false;
+        //Piece temp;
+        //boolean isFalse = false;
 
         if(isMovingRight(k.getCol(), moveCol)){
 
@@ -1055,40 +1060,44 @@ public class ChessBoard {
 
             for(int col = k.getCol() + 1; col <= moveCol; col++){
 
-                //temp stores info from pieces[row][col]
-                temp = pieces[startRow][col];
+                // //temp stores info from pieces[row][col]
+                // temp = pieces[startRow][col];
 
-                //moves the King to the selected spot
-                pieces[startRow][col] = pieces[startRow][startCol];
-                pieces[startRow][startCol] = null;
+                // //moves the King to the selected spot
+                // pieces[startRow][col] = pieces[startRow][startCol];
+                // pieces[startRow][startCol] = null;
 
-                if(isWhiteSide){//white side
+                // if(isWhiteSide){//white side
                     
-                    whiteKingRow = startRow;
-                    whiteKingCol = col;
+                //     whiteKingRow = startRow;
+                //     whiteKingCol = col;
 
-                    if(canAttackKing(true)){//if when the kings moves and it is now in check
-                        isFalse = true; //it is invalid
-                    }
-                    whiteKingRow = startRow;
-                    whiteKingCol = startCol;
-                }
-                else {//black side
-                    blackKingRow = startRow;
-                    blackKingCol = col;
+                //     if(canAttackKing(true)){//if when the kings moves and it is now in check
+                //         isFalse = true; //it is invalid
+                //     }
+                //     whiteKingRow = startRow;
+                //     whiteKingCol = startCol;
+                // }
+                // else {//black side
+                //     blackKingRow = startRow;
+                //     blackKingCol = col;
 
-                    if(canAttackKing(false)){
-                        isFalse = true;
-                    }
-                    blackKingRow = startRow;
-                    blackKingCol = startCol;
-                }
+                //     if(canAttackKing(false)){
+                //         isFalse = true;
+                //     }
+                //     blackKingRow = startRow;
+                //     blackKingCol = startCol;
+                // }
 
-                //resets the kings position to original spot
-                pieces[startRow][startCol] = pieces[startRow][col];
-                pieces[startRow][col] = temp;
+                // //resets the kings position to original spot
+                // pieces[startRow][startCol] = pieces[startRow][col];
+                // pieces[startRow][col] = temp;
 
-                if(isFalse){
+                // if(isFalse){
+                //     return false;
+                // }
+
+                if(isKingInDanger(startRow, startCol, startRow, col)){
                     return false;
                 }
 
@@ -1105,40 +1114,44 @@ public class ChessBoard {
 
             for(int col = k.getCol() - 1; col >= moveCol; col--){
 
-                //temp stores info from pieces[row][col]
-                temp = pieces[startRow][col];
+                // //temp stores info from pieces[row][col]
+                // temp = pieces[startRow][col];
 
-                //moves the King to the selected spot
-                pieces[startRow][col] = pieces[startRow][startCol];
-                pieces[startRow][startCol] = null;
+                // //moves the King to the selected spot
+                // pieces[startRow][col] = pieces[startRow][startCol];
+                // pieces[startRow][startCol] = null;
 
-                if(isWhiteSide){//white side
+                // if(isWhiteSide){//white side
                     
-                    whiteKingRow = startRow;
-                    whiteKingCol = col;
+                //     whiteKingRow = startRow;
+                //     whiteKingCol = col;
 
-                    if(canAttackKing(true)){//if when the kings moves and it is now in check
-                        isFalse = true; //it is invalid
-                    }
-                    whiteKingRow = startRow;
-                    whiteKingCol = startCol;
-                }
-                else {//black side
-                    blackKingRow = startRow;
-                    blackKingCol = col;
+                //     if(canAttackKing(true)){//if when the kings moves and it is now in check
+                //         isFalse = true; //it is invalid
+                //     }
+                //     whiteKingRow = startRow;
+                //     whiteKingCol = startCol;
+                // }
+                // else {//black side
+                //     blackKingRow = startRow;
+                //     blackKingCol = col;
 
-                    if(canAttackKing(false)){
-                        isFalse = true;
-                    }
-                    blackKingRow = startRow;
-                    blackKingCol = startCol;
-                }
+                //     if(canAttackKing(false)){
+                //         isFalse = true;
+                //     }
+                //     blackKingRow = startRow;
+                //     blackKingCol = startCol;
+                // }
 
-                //resets the kings position to original spot
-                pieces[startRow][startCol] = pieces[startRow][col];
-                pieces[startRow][col] = temp;
+                // //resets the kings position to original spot
+                // pieces[startRow][startCol] = pieces[startRow][col];
+                // pieces[startRow][col] = temp;
 
-                if(isFalse){
+                // if(isFalse){
+                //     return false;
+                // }
+
+                if(isKingInDanger(startRow, startCol, startRow, col)){
                     return false;
                 }
 

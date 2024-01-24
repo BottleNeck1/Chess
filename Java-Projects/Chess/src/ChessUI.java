@@ -340,11 +340,11 @@ public class ChessUI extends JFrame implements ActionListener {
         //moves the piece in the piece 2D array is chessboard class
         chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
 
-        //unmarks the marked spaces for a new turn
-        unmark();
-        
         //make it the next players turn after they have moved a piece
         isWhiteTurn = !isWhiteTurn;
+        
+        //unmarks the marked spaces for a new turn
+        unmark();
 
         //calls to check if a king is in check to mark it
         isCheck();
