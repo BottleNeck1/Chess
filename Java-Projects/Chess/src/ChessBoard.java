@@ -841,6 +841,42 @@ public class ChessBoard {
         return false;
     }
 
+    // public void isKingInDanger(int kingRow, int kingCol, int ){
+
+    //     //temp stores info from pieces[row][col]
+    //     temp = pieces[startRow][col];
+
+    //     //moves the King to the selected spot
+    //     pieces[startRow][col] = pieces[startRow][startCol];
+    //     pieces[startRow][startCol] = null;
+
+    //     if(isWhiteSide){//white side
+            
+    //         whiteKingRow = startRow;
+    //         whiteKingCol = col;
+
+    //         if(canAttackKing(true)){//if when the kings moves and it is now in check
+    //             isFalse = true; //it is invalid
+    //         }
+    //         whiteKingRow = startRow;
+    //         whiteKingCol = startCol;
+    //     }
+    //     else {//black side
+    //         blackKingRow = startRow;
+    //         blackKingCol = col;
+
+    //         if(canAttackKing(false)){
+    //             isFalse = true;
+    //         }
+    //         blackKingRow = startRow;
+    //         blackKingCol = startCol;
+    //     }
+
+    //     //resets the kings position to original spot
+    //     pieces[startRow][startCol] = pieces[startRow][col];
+    //     pieces[startRow][col] = temp;
+    // }
+
     /**
      * Checks if a king is checkmate
      * @param side what king to check for
