@@ -360,7 +360,7 @@ public class ChessBoard {
      * @throws IllegalArgumentException if current row or col is out of bounds
      * @throws IllegalArgumentException if potential row or col is out of bounds
      */
-    public boolean canMove(
+    private boolean canMove(
         int currentRow, int currentCol, int potentialRow, int potentialCol, boolean castling){
 
         if(currentRow < 0 || currentRow >= ARRAY_SIZE || 
