@@ -167,6 +167,9 @@ public class ChessBoard {
 
         boolean hasValidMove = false;
 
+        //check if thier king is in check
+        isCheck(pieces[startRow][startCol].isWhitePiece());
+
         //iterates through pieces array to check if piece at [startRow][startCol] 
         //is able to move their (does not check for check)
         for(int row = 0; row < ARRAY_SIZE; row++){
@@ -388,17 +391,33 @@ public class ChessBoard {
         }
 
         //check for pawn attack
-        if(currentPiece instanceof Pawn && currentCol != potentialCol){
-            Pawn p = (Pawn)currentPiece;
+        if(currentPiece instanceof Pawn){
 
-            if(pieces[potentialRow][potentialCol] == null || 
-                currentPiece.isWhitePiece() == 
-                potentialPiece.isWhitePiece()){
-
-                return false;
+            if(currentCol != potentialCol){
+                Pawn p = (Pawn)currentPiece;
+                
+                if(potentialPiece instanceof Pawn){
+                    if(canEnPassant(currentRow, currentCol, potentialRow, potentialCol)){
+                        validMoves[p.isWhitePiece() ? currentRow - 1 : currentRow + 1][potentialCol] = true;
+                        return false;
+                    }
+                }
+    
+                if(pieces[potentialRow][potentialCol] == null || 
+                    currentPiece.isWhitePiece() == 
+                    potentialPiece.isWhitePiece()){
+    
+                    return false;
+                }
+    
+                return p.canAttack(potentialRow, potentialCol);
             }
 
-            return p.canAttack(potentialRow, potentialCol);
+            // if(potentialPiece == null){
+            //     if(canEnPassant(currentRow, currentCol, potentialRow, potentialCol)){
+            //         return true;
+            //     }
+            // }
         }
 
         if(castling && currentPiece instanceof King && canCastle(currentPiece.isWhitePiece(), potentialRow, potentialCol)){
@@ -760,6 +779,50 @@ public class ChessBoard {
             }        
         }
 
+        for(int row = 0; row < ARRAY_SIZE; row++){
+
+            for(int col = 0; col < ARRAY_SIZE; col++){
+
+                if(row == currentRow && col == newCol){
+                    continue;
+                }
+
+                if(pieces[row][col] instanceof Pawn){
+                    Pawn p = (Pawn)pieces[row][col];
+                    if(p.getCanEnPassant()){
+                        p.setEnPassant(false);
+                    }
+                    pieces[row][col] = p;
+                }
+
+            }
+        }
+
+        if(pieces[currentRow][currentCol] instanceof Pawn){
+            Pawn p = (Pawn)pieces[currentRow][currentCol];
+
+            if(currentCol != newCol){
+
+                if(pieces[currentRow][newCol] instanceof Pawn){
+                    Pawn p2 = (Pawn)pieces[currentRow][newCol];
+
+                    if(p2.getCanEnPassant()){
+                        pieces[currentRow][newCol] = null;
+                    }
+                }
+            }
+            
+            // if(p.getCanEnPassant()){
+            //     p.setEnPassant(false);
+            // }
+            
+            if(p.isFirstMove()){
+                p.setEnPassant(true);
+            }
+
+            pieces[currentRow][currentCol] = p;
+        }
+
         if(castling){
             return;
         }
@@ -771,6 +834,38 @@ public class ChessBoard {
         pieces[currentRow][currentCol].setPosition(newRow, fixCol);
         pieces[newRow][fixCol] = pieces[currentRow][currentCol];
         pieces[currentRow][currentCol] = null;
+    }
+
+    /**
+     * Check if the current piece can En Passant the new piece
+     * @param currentRow current piece row
+     * @param currentCol current piece col
+     * @param newRow new piece row
+     * @param newCol new piece col
+     * @return true both pieces are pawm and if the new pawn can be attacked by en passant
+     */
+    public boolean canEnPassant(int currentRow, int currentCol, int newRow, int newCol){
+
+        Piece currentP = pieces[currentRow][currentCol];
+        Piece newP = pieces[newRow][newCol];
+
+        if(currentP == null || newP == null){
+            return false;
+        }
+
+        if(currentP.isWhitePiece() == newP.isWhitePiece()){
+            return false;
+        }
+
+        if(!(currentP instanceof Pawn) && !(newP instanceof Pawn)){
+            return false;
+        }
+
+        Pawn p = (Pawn)pieces[newRow][newCol];
+
+        boolean rtn = p.canEnPassant(currentRow, currentCol);
+
+        return rtn;
     }
 
     /**
@@ -788,23 +883,6 @@ public class ChessBoard {
         else {
             isBlackCheck = false;
         }
-
-        //if the selected piece can move to king spot, return true
-        // for(int row = 0; row < ARRAY_SIZE; row++){
-
-        //     for(int col = 0; col < ARRAY_SIZE; col++){
-
-        //         if(canMove(row, col, getKingRow(side), getKingCol(side), false)) { 
-        //             if(side){
-        //                 isWhiteCheck = true;
-        //             }
-        //             else {
-        //                 isBlackCheck = true;
-        //             }
-        //             return true; 
-        //         }
-        //     }
-        // }
 
         if(canAttackKing(side)){
 
@@ -841,6 +919,15 @@ public class ChessBoard {
         return false;
     }
 
+    /**
+     * Check if a king is in danger when moving by putting it in a temp postition then
+     * checking if any piece can attack it
+     * @param kingRow initial king row
+     * @param kingCol initial king col
+     * @param moveRow check row
+     * @param moveCol check col
+     * @return true if king gets put in check when moving, else return false
+     */
     public boolean isKingInDanger(int kingRow, int kingCol, int moveRow, int moveCol){
 
         //temp stores info from pieces[row][col]
@@ -1049,6 +1136,10 @@ public class ChessBoard {
         //         return false;
         //     }
         // }
+
+        if(isCheck(k.isWhitePiece())){
+            return false;
+        }
         //Piece temp;
         //boolean isFalse = false;
 
@@ -1059,43 +1150,6 @@ public class ChessBoard {
             } //checks if rooks have moved, if they did return false
 
             for(int col = k.getCol() + 1; col <= moveCol; col++){
-
-                // //temp stores info from pieces[row][col]
-                // temp = pieces[startRow][col];
-
-                // //moves the King to the selected spot
-                // pieces[startRow][col] = pieces[startRow][startCol];
-                // pieces[startRow][startCol] = null;
-
-                // if(isWhiteSide){//white side
-                    
-                //     whiteKingRow = startRow;
-                //     whiteKingCol = col;
-
-                //     if(canAttackKing(true)){//if when the kings moves and it is now in check
-                //         isFalse = true; //it is invalid
-                //     }
-                //     whiteKingRow = startRow;
-                //     whiteKingCol = startCol;
-                // }
-                // else {//black side
-                //     blackKingRow = startRow;
-                //     blackKingCol = col;
-
-                //     if(canAttackKing(false)){
-                //         isFalse = true;
-                //     }
-                //     blackKingRow = startRow;
-                //     blackKingCol = startCol;
-                // }
-
-                // //resets the kings position to original spot
-                // pieces[startRow][startCol] = pieces[startRow][col];
-                // pieces[startRow][col] = temp;
-
-                // if(isFalse){
-                //     return false;
-                // }
 
                 if(isKingInDanger(startRow, startCol, startRow, col)){
                     return false;
@@ -1113,43 +1167,6 @@ public class ChessBoard {
             } //checks if rooks have moved, if they did return false
 
             for(int col = k.getCol() - 1; col >= moveCol; col--){
-
-                // //temp stores info from pieces[row][col]
-                // temp = pieces[startRow][col];
-
-                // //moves the King to the selected spot
-                // pieces[startRow][col] = pieces[startRow][startCol];
-                // pieces[startRow][startCol] = null;
-
-                // if(isWhiteSide){//white side
-                    
-                //     whiteKingRow = startRow;
-                //     whiteKingCol = col;
-
-                //     if(canAttackKing(true)){//if when the kings moves and it is now in check
-                //         isFalse = true; //it is invalid
-                //     }
-                //     whiteKingRow = startRow;
-                //     whiteKingCol = startCol;
-                // }
-                // else {//black side
-                //     blackKingRow = startRow;
-                //     blackKingCol = col;
-
-                //     if(canAttackKing(false)){
-                //         isFalse = true;
-                //     }
-                //     blackKingRow = startRow;
-                //     blackKingCol = startCol;
-                // }
-
-                // //resets the kings position to original spot
-                // pieces[startRow][startCol] = pieces[startRow][col];
-                // pieces[startRow][col] = temp;
-
-                // if(isFalse){
-                //     return false;
-                // }
 
                 if(isKingInDanger(startRow, startCol, startRow, col)){
                     return false;

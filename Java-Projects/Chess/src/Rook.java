@@ -26,7 +26,7 @@ public class Rook implements Piece {
     protected static final int  MAX_INDEX = 7;
 
     /** Each piece starts off with isFirstMove to true */
-    protected boolean isFirstMove = true;
+    protected boolean isFirstMove;
 
     /** White Piece File Path */
     protected File whiteImgFile = new File("src/resources/WhiteRook.png");
@@ -51,6 +51,7 @@ public class Rook implements Piece {
         this.row = row;
         this.col = col;
         this.isWhitePiece = isWhitePiece;
+        this.isFirstMove = true;
     }
 
     /** Sets isFirstMove to false */

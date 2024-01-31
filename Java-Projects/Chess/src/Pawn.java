@@ -7,6 +7,12 @@ import java.io.File;
  */
 public class Pawn extends Rook {
 
+    /** Starting Pawn Row */
+    private int initialRow;
+
+    /** Can the pawn be attacked by EnPassant */
+    private boolean canEnPassant;
+
     /**
      * Bishop Constructor
      * 
@@ -24,6 +30,8 @@ public class Pawn extends Rook {
         this.col = col;
         this.isWhitePiece = isWhitePiece;
         this.isFirstMove = true;
+        this.initialRow = row;
+        this.canEnPassant = false;
     }
 
     /**
@@ -79,4 +87,54 @@ public class Pawn extends Rook {
                 );
         }
     }
+
+    /**
+     * Check if a piece can attack the pawn by En Passant
+     * can En Passant if pawn is on its second move
+     * @param attackRow attack row
+     * @param attackCol attack col
+     * @return true if the piece can attack the pawn by En Passant, else false
+     */
+    public boolean canEnPassant(int attackRow, int attackCol){
+
+        // if(this.col != attackCol || !canEnPassant){
+        //     return false;
+        // }
+
+        // if(Math.abs(attackRow - initialRow) == 1 && Math.abs(this.row - initialRow) == 2 && !isFirstMove){
+        //     return true;
+        // }
+
+        if(!canEnPassant || isFirstMove){
+            return false;
+        }
+
+        if(Math.abs(row - initialRow) != 2){
+            return false;
+        }
+
+        if(row != attackRow || Math.abs(attackCol - col) != 1){
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Set if the pawn can be En Passant
+     * @param set what to set
+     */
+    public void setEnPassant(boolean set){
+        canEnPassant = set;
+    }
+
+    /**
+     * Return field canEnPassant
+     * @return canEnPassant
+     */
+    public boolean getCanEnPassant(){
+        return canEnPassant;
+    }
+
+    
 }

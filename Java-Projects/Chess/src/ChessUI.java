@@ -321,24 +321,28 @@ public class ChessUI extends JFrame implements ActionListener {
             promoteMenu.show(this, selectPieceCol * 50, selectPieceRow * 50);
         }
 
-        //when moving a piece, given the target button the corresponding ImageIcon
-        if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
-            buttons[row][col].setIcon(
-                new ImageIcon(chessBoard.getImage(selectPieceRow, selectPieceCol)));
-            buttons[selectPieceRow][selectPieceCol].setIcon(null);
-        }
-
-        // if(isWhiteTurn){
-        //     buttons[row][col].setForeground(Color.WHITE);
-        // }
-        // else {
-        //     buttons[row][col].setForeground(Color.BLACK);
-        // }
-
-        //buttons[selectPieceRow][selectPieceCol].setText("");
-
         //moves the piece in the piece 2D array is chessboard class
         chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
+
+        //when moving a piece, re-do all icons in grid
+        for(int gridRow = 0; gridRow < GRID_SIZE; gridRow++){
+
+            for(int gridCol = 0; gridCol < GRID_SIZE; gridCol++){
+
+                if(chessBoard.getImage(gridRow, gridCol) != null){
+                    buttons[gridRow][gridCol].setIcon(
+                        new ImageIcon(chessBoard.getImage(gridRow, gridCol)));
+                }
+                else {
+                    buttons[gridRow][gridCol].setIcon(null);
+                }
+            }
+            if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
+                buttons[row][col].setIcon(
+                    new ImageIcon(chessBoard.getImage(selectPieceRow, selectPieceCol)));
+                buttons[selectPieceRow][selectPieceCol].setIcon(null);
+            }
+        }    
 
         //make it the next players turn after they have moved a piece
         isWhiteTurn = !isWhiteTurn;
