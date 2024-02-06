@@ -54,6 +54,9 @@ public class ChessUI extends JFrame implements ActionListener {
     /** Promotion Menu */
     private JPopupMenu promoteMenu;
 
+    /** Pawn Promotion Option */
+    private Piece promoteOption;
+
     /** Menu Items */
     private JMenuItem queenItem, rookItem, knightItem, bishopItem;
 
@@ -141,25 +144,25 @@ public class ChessUI extends JFrame implements ActionListener {
         //add event to pop up menu items
         queenItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                promote(q);
+                promoteOption = q;
             }
         });
 
         rookItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                promote(r);
+                promoteOption = r;
             }
         });
 
         bishopItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                promote(b);
+                promoteOption = b;
             }
         });
 
         knightItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                promote(n);
+                promoteOption = n;
             }
         });
         
@@ -294,7 +297,9 @@ public class ChessUI extends JFrame implements ActionListener {
         if(chessBoard.canPromote(selectPieceRow, selectPieceCol, row, isWhiteTurn)){
 
             promoteMenu.show(this, selectPieceCol * 50, selectPieceRow * 50);
-        }
+            
+            promote(promoteOption, row, col);
+        }//TODO: FIX p.getImage is null
 
         //moves the piece in the piece 2D array is chessboard class
         chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
@@ -385,14 +390,10 @@ public class ChessUI extends JFrame implements ActionListener {
         }
     }
 
-    private void promote(Piece p){
+    private void promote(Piece p, int newRow, int newCol){
 
-        String type = p.getName();
-
-        int newRow = isWhiteTurn ? selectPieceRow + 1 : selectPieceRow - 1;
-
-        buttons[newRow][selectPieceCol].setIcon(new ImageIcon(p.getImage()));
-        chessBoard.promote(type, newRow, selectPieceCol);
+        chessBoard.promote(p.getName(), newRow, newCol);
+        buttons[newRow][newCol].setIcon(new ImageIcon(p.getImage()));
     }
 
     /** Resets Game */

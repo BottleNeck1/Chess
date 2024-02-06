@@ -108,7 +108,7 @@ public class ChessBoard {
         //Sets Kings
         pieces[0][FOUR_POS] = new King(0, FOUR_POS, false);
         blackKing = (King)pieces[0][FOUR_POS];
-        
+
         pieces[SEVEN_POS][FOUR_POS] = new King(SEVEN_POS, FOUR_POS, true);
         whiteKing = (King)pieces[SEVEN_POS][FOUR_POS];    
         
