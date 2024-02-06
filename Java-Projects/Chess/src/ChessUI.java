@@ -111,14 +111,6 @@ public class ChessUI extends JFrame implements ActionListener {
                 buttons[row][col].addActionListener(this); // make button usable
                 board.add(buttons[row][col]); // add JButton to primary JPanel
 
-
-                // if(row == 0 || row == 1){
-                //     buttons[row][col].setForeground(Color.BLACK);
-                // }
-                // else if(row == WHITE_TOP_ROW || row == WHITE_BOTTOM_ROW){
-                //     buttons[row][col].setForeground(Color.WHITE);
-                // }
-
                 //every other button is set to a color
                 if(background){
                     buttons[row][col].setBackground(
@@ -140,11 +132,6 @@ public class ChessUI extends JFrame implements ActionListener {
         Rook r = new Rook(0, 0, isWhiteTurn);
         Bishop b = new Bishop(0, 0, isWhiteTurn);
         Knight n = new Knight(0, 0, isWhiteTurn);
-
-        // queenItem = new JMenuItem(q.getName(), new ImageIcon(q.getImage()));
-        // rookItem = new JMenuItem(r.getName(), new ImageIcon(r.getImage()));
-        // bishopItem = new JMenuItem(b.getName(), new ImageIcon(b.getImage()));
-        // knightItem = new JMenuItem(n.getName(), new ImageIcon(n.getImage()));
 
         queenItem = new JMenuItem(new ImageIcon(q.getImage()));    
         rookItem = new JMenuItem(new ImageIcon(r.getImage()));
@@ -267,11 +254,6 @@ public class ChessUI extends JFrame implements ActionListener {
                     buttons[row][col].setBackground(
                         new Color(0, GREEN_VALUE_1, 0));                    
                 }
-                // else if(startRow == row && startCol == col){//marks selected piece
-                //     pieceChosen = true;
-                //     selectPieceRow = row;
-                //     selectPieceCol = col;
-                // }
             }
         }
 
@@ -280,9 +262,6 @@ public class ChessUI extends JFrame implements ActionListener {
     }
 
     private void unmark(){
-
-        //calls the chessboard method to reset the valid moves in the 2D boolean array
-        // chessBoard.resetAvailableMoves();
 
         //next player can now choose their piece to move
         pieceChosen = false;
@@ -311,10 +290,6 @@ public class ChessUI extends JFrame implements ActionListener {
     }
 
     private void movePiece(int row, int col){
-        //buttons[row][col].setText(chessBoard.getName(selectPieceRow, selectPieceCol));
-
-        //resets all available moves for a new turn
-        // chessBoard.resetAvailableMoves();
 
         if(chessBoard.canPromote(selectPieceRow, selectPieceCol, row, isWhiteTurn)){
 
