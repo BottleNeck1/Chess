@@ -51,11 +51,17 @@ public class ChessUI extends JFrame implements ActionListener {
     /** User selected piece to move column */
     private int selectPieceCol;
 
+    /** Row to Promote */
+    private int promotionRow;
+
+    /** Col to Promote */
+    private int promotionCol;
+
     /** Promotion Menu */
     private JPopupMenu promoteMenu;
 
     /** Pawn Promotion Option */
-    private Piece promoteOption;
+    private Piece b, q, r, n;
 
     /** Menu Items */
     private JMenuItem queenItem, rookItem, knightItem, bishopItem;
@@ -131,10 +137,10 @@ public class ChessUI extends JFrame implements ActionListener {
         //new pop up menu for promotion
         promoteMenu = new JPopupMenu();
 
-        Queen q = new Queen(0, 0, isWhiteTurn);
-        Rook r = new Rook(0, 0, isWhiteTurn);
-        Bishop b = new Bishop(0, 0, isWhiteTurn);
-        Knight n = new Knight(0, 0, isWhiteTurn);
+        q = new Queen(0, 0, isWhiteTurn);
+        r = new Rook(0, 0, isWhiteTurn);
+        b = new Bishop(0, 0, isWhiteTurn);
+        n = new Knight(0, 0, isWhiteTurn);
 
         queenItem = new JMenuItem(new ImageIcon(q.getImage()));    
         rookItem = new JMenuItem(new ImageIcon(r.getImage()));
@@ -144,25 +150,25 @@ public class ChessUI extends JFrame implements ActionListener {
         //add event to pop up menu items
         queenItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                promoteOption = q;
+                promote(q);
             }
         });
 
         rookItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                promoteOption = r;
+                promote(r);
             }
         });
 
         bishopItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                promoteOption = b;
+                promote(b);
             }
         });
 
         knightItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                promoteOption = n;
+                promote(n);
             }
         });
         
@@ -296,10 +302,21 @@ public class ChessUI extends JFrame implements ActionListener {
 
         if(chessBoard.canPromote(selectPieceRow, selectPieceCol, row, isWhiteTurn)){
 
+            q = new Queen(0, 0, isWhiteTurn);
+            r = new Rook(0, 0, isWhiteTurn);
+            b = new Bishop(0, 0, isWhiteTurn);
+            n = new Knight(0, 0, isWhiteTurn);
+
+            queenItem.setIcon(new ImageIcon(q.getImage())); 
+            rookItem.setIcon(new ImageIcon(r.getImage()));
+            bishopItem.setIcon(new ImageIcon(b.getImage()));
+            knightItem.setIcon(new ImageIcon(n.getImage()));
+
             promoteMenu.show(this, selectPieceCol * 50, selectPieceRow * 50);
             
-            promote(promoteOption, row, col);
-        }//TODO: FIX p.getImage is null
+            promotionRow = row;
+            promotionCol = col;
+        }
 
         //moves the piece in the piece 2D array is chessboard class
         chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
@@ -390,10 +407,10 @@ public class ChessUI extends JFrame implements ActionListener {
         }
     }
 
-    private void promote(Piece p, int newRow, int newCol){
+    private void promote(Piece p){
 
-        chessBoard.promote(p.getName(), newRow, newCol);
-        buttons[newRow][newCol].setIcon(new ImageIcon(p.getImage()));
+        chessBoard.promote(p.getName(), promotionRow, promotionCol);
+        buttons[promotionRow][promotionCol].setIcon(new ImageIcon(p.getImage()));
     }
 
     /** Resets Game */
