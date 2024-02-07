@@ -201,20 +201,24 @@ public class ChessUI extends JFrame implements ActionListener {
                     if(!pieceChosen){ //user has not selected a piece to move
 
                         //checks if the piece is able to be moved by player1/player2
-                        if(chessBoard.canSelect(row, col, isWhiteTurn)) { break; }
+                        if(!chessBoard.canSelect(row, col, isWhiteTurn)) { break; }
                         
                         //If the piece is selectable, marks all available moves green 
                         //with a raised bevel border
                         markAvailable(row, col);
                         break; //break out to wait for player move
                     }
-                    else { //if a player has chosen a piece
+                    else if(pieceChosen && chessBoard.canSelect(row, col, isWhiteTurn)){
+                        unmark();
 
                         //when player clicks on selected peice, unselects it and reset move markers
                         if(selectPieceRow == row && selectPieceCol == col){
-                            unmark();
                             break;
                         }
+
+                        markAvailable(row, col);
+                    }
+                    else { //if a player has chosen a piece
 
                         //when player selects a button what is not a valid move, do nothing
                         if(!chessBoard.isValidMove(row, col)){

@@ -647,7 +647,7 @@ public class ChessBoard {
             throw new IllegalArgumentException("Invalid row or col");
         }
 
-        return !isCorrectSide(row, col, isWhiteTurn) || isNull(row, col);
+        return isCorrectSide(row, col, isWhiteTurn) && !isNull(row, col);
     }
 
     /**
