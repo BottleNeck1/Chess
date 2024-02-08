@@ -6,5 +6,5 @@
 
 * [Chess-V3](https://github.com/BottleNeck1/Projects/tree/37b4301e30659b7b8d3103bc860d30bffb0bdf34/Java-Projects/Chess) - Added piece icons, Fix Queen position, when a king is in check only available moves should take king out of check
 
-* [Chess-V4]() - Added comments.
+* [Chess-V4](https://github.com/BottleNeck1/Projects/tree/ac315cd041abc26f390c8e9017936f98bfd7597c/Java-Projects/Chess) - Added Castling, En Passant, Pawn Promotion. Changed Piece Selection Flow. No stalement implementation
 
