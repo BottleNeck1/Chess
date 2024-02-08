@@ -441,7 +441,6 @@ public class ChessUI extends JFrame implements ActionListener {
                 }
                 //Align icon to center
                 buttons[row][col].setHorizontalTextPosition(SwingConstants.CENTER);
-                //buttons[row][col].setFont(new Font("Default", Font.BOLD, PIECE_TXT_SIZE));
                 //Add simple line border to each button
                 buttons[row][col].setBorder(new LineBorder(Color.BLACK, 1));
                 buttons[row][col].setFocusPainted(false); // remove focus box
