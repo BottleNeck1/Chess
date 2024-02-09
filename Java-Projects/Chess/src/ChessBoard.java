@@ -1142,4 +1142,63 @@ public class ChessBoard {
         return k.isPossibleCastle(moveRow, moveCol) && isUnobstructed(k, moveRow, moveCol, true) &&
             pieces[moveRow][moveCol] == null;
     }
+
+    /**
+     * Checks For Statemate
+     * Is stalemate if no side has an available move,
+     * If whiteSide has moved and no black move,
+     * If black side has moved and no white move,
+     * else return false
+     * @param side player side
+     * @return true if found a stalemate, else false
+     */
+    public boolean isStaleMate(boolean side){
+
+        if(isWhiteCheck || isBlackCheck){
+            return false;
+        }
+
+        boolean whiteHasMove = false;
+        boolean blackHasMove = false;
+
+        //find an available move for black and white
+        for(int row = 0; row < ARRAY_SIZE; row++){
+
+            for(int col = 0; col < ARRAY_SIZE; col++){
+
+                if(pieces[row][col] == null) { continue; }
+
+                if(pieces[row][col].isWhitePiece()) {
+                    if(setValidMoves(row, col)){
+                        whiteHasMove = true;
+                    }
+                }
+                else {
+                    if(setValidMoves(row, col)){
+                        blackHasMove = true;
+                    }
+                }
+
+                if(whiteHasMove && blackHasMove) { break; }
+            }
+        }
+
+        //when neither side has a move return true
+        if(!whiteHasMove && !blackHasMove){
+            return true;
+        }
+
+        //when white moved and black has no available movel return true
+        if(side && !blackHasMove){
+            return true;
+        }
+
+        //when black moved and white has no available movel return true
+        if(!side && !whiteHasMove){
+            return true;
+        }
+
+        //if none of the above conditions are met, return false
+        return false;
+    }
 }

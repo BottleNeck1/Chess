@@ -345,14 +345,36 @@ public class ChessUI extends JFrame implements ActionListener {
             }
         }    
 
-        //make it the next players turn after they have moved a piece
-        isWhiteTurn = !isWhiteTurn;
         
         //unmarks the marked spaces for a new turn
         unmark();
-
+        
         //calls to check if a king is in check to mark it
         isCheck();
+
+        //checks for stalemate
+        isStaleMate();
+
+        //make it the next players turn after they have moved a piece
+        isWhiteTurn = !isWhiteTurn;
+    }
+
+    private void isStaleMate(){
+        if(chessBoard.isStaleMate(isWhiteTurn)) {
+
+            //Show Dialog Box with Yes/No/Cancel option
+            int choice = JOptionPane.showConfirmDialog(null, "Game Ends in Stalemate! Play Again? ");
+            
+            if(choice == JOptionPane.YES_OPTION){
+                resetBoard();
+            }
+            else if(choice == JOptionPane.NO_OPTION){
+                System.exit(1);
+            }        
+            else {
+                canPlay = false;
+            }
+        }
     }
 
     private void isCheck(){
