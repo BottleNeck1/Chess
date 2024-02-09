@@ -348,6 +348,8 @@ public class ChessUI extends JFrame implements ActionListener {
             }
             background = !background;
         }
+
+        isCheck();
     }
 
     private void movePiece(int row, int col){
