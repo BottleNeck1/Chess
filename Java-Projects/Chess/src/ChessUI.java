@@ -57,6 +57,24 @@ public class ChessUI extends JFrame implements ActionListener {
     /** Col to Promote */
     private int promotionCol;
 
+    /** Player Choice for side */
+    private int playerChoice;
+
+    /** Player Side to Play on */
+    private boolean playerSide;
+
+    /** Computer Side to Play on */
+    private boolean computerSide;
+
+    /** Play against Computer or not */
+    private boolean playComputer;
+
+    /** Choices for the player side*/
+    private Object[] playerSideOptions = {"White", "Black", "Exit"};
+
+    /** Choices for the player play against*/
+    private Object[] playComputerOptions = {"Yes", "No", "Exit"};
+
     /** Promotion Menu */
     private JPopupMenu promoteMenu;
 
@@ -180,6 +198,37 @@ public class ChessUI extends JFrame implements ActionListener {
 
         //make GUI visible to user
         setVisible(true);
+
+        //Show Dialog Box with Yes/No/Cancel option
+        playerChoice = JOptionPane.showOptionDialog(board, "Choose a Side!", "Side Chooser", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, 
+            null, playerSideOptions, playerSideOptions[2]);
+            
+        if(playerChoice == JOptionPane.YES_OPTION){
+            playerSide = true;
+        }
+        else if(playerChoice == JOptionPane.NO_OPTION){
+            playerSide = false;
+        }        
+        else {
+            System.exit(1);
+        }
+
+        playerChoice = JOptionPane.showOptionDialog(board, "Player Against Computer?", "Choose Opponent", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, 
+            null, playComputerOptions, playComputerOptions[2]);
+            
+        if(playerChoice == JOptionPane.YES_OPTION){
+            playComputer = true;
+            computerSide = !playerSide;
+        }
+        else if(playerChoice == JOptionPane.NO_OPTION){
+            playComputer = false;
+        }        
+        else {
+            System.exit(1);
+        }
+
+        computerMove();
+        
     }
 
     /**
@@ -228,6 +277,8 @@ public class ChessUI extends JFrame implements ActionListener {
                         //if above are not true, player has selected a valid spot to move to,
                         //so move the selected piece to that spot
                         movePiece(row, col);
+
+                        computerMove();
                         break;
                     }
                 }
@@ -297,9 +348,6 @@ public class ChessUI extends JFrame implements ActionListener {
             }
             background = !background;
         }
-
-        //calls to check if a king is in check to mark it
-        isCheck();
     }
 
     private void movePiece(int row, int col){
@@ -325,6 +373,46 @@ public class ChessUI extends JFrame implements ActionListener {
         //moves the piece in the piece 2D array is chessboard class
         chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
 
+        processMove();
+    }
+
+    private void computerMove(){
+
+        if(isWhiteTurn == playerSide || !playComputer) { return; }
+
+        chessBoard.computerMove(computerSide);
+
+        processMove();
+    }
+
+    private void processMove(){
+        //Update board after moving
+        updateBoard();
+        
+        //unmarks the marked spaces for a new turn
+        unmark();    
+
+        //calls to check if a king is in check to mark it
+        isCheck();
+        
+        //checks for stalemate
+        isStaleMate();
+        
+        //make it the next players turn after they have moved a piece
+        isWhiteTurn = !isWhiteTurn;
+
+        //If White king is in checkmate call for game to end with black winning
+        if(chessBoard.isCheckMate(true)) {
+            gameWin(false);
+        }       
+
+        //If Black King is in checkmate call for game to end with white winning
+        if(chessBoard.isCheckMate(false)){
+            gameWin(true);
+        }
+    }
+
+    private void updateBoard() {
         //when moving a piece, re-do all icons in grid
         for(int gridRow = 0; gridRow < GRID_SIZE; gridRow++){
 
@@ -338,25 +426,12 @@ public class ChessUI extends JFrame implements ActionListener {
                     buttons[gridRow][gridCol].setIcon(null);
                 }
             }
-            if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
-                buttons[row][col].setIcon(
-                    new ImageIcon(chessBoard.getImage(selectPieceRow, selectPieceCol)));
-                buttons[selectPieceRow][selectPieceCol].setIcon(null);
-            }
-        }    
-
-        
-        //unmarks the marked spaces for a new turn
-        unmark();
-        
-        //calls to check if a king is in check to mark it
-        isCheck();
-
-        //checks for stalemate
-        isStaleMate();
-
-        //make it the next players turn after they have moved a piece
-        isWhiteTurn = !isWhiteTurn;
+            // if(chessBoard.getImage(selectPieceRow, selectPieceCol) != null){
+            //     buttons[row][col].setIcon(
+            //         new ImageIcon(chessBoard.getImage(selectPieceRow, selectPieceCol)));
+            //     buttons[selectPieceRow][selectPieceCol].setIcon(null);
+            // }
+        }       
     }
 
     private void isStaleMate(){
@@ -392,11 +467,6 @@ public class ChessUI extends JFrame implements ActionListener {
             buttons[kingRow][kingCol].setBackground(
                 new Color(GREEN_VALUE_1, 0, 0)//RED COLOR 
             );
-
-            //If White king is in checkmate call for game to end with black winning
-            if(chessBoard.isCheckMate(true)) {
-                gameWin(false);
-            }
         }
 
         if(chessBoard.isCheck(false)){//check black king is in check
@@ -409,11 +479,6 @@ public class ChessUI extends JFrame implements ActionListener {
             buttons[kingRow][kingCol].setBackground(
                 new Color(GREEN_VALUE_1, 0, 0)//RED COLOR 
             );
-
-            //If Black King is in checkmate call for game to end with white winning
-            if(chessBoard.isCheckMate(false)){
-                gameWin(true);
-            }
         }
     }
 

@@ -1,5 +1,6 @@
 import java.awt.Image;
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Chess Board Class Object
@@ -1200,5 +1201,63 @@ public class ChessBoard {
 
         //if none of the above conditions are met, return false
         return false;
+    }
+
+    /**
+     * Stimulate Random Computer Move
+     * @param side computer side
+     */
+    public void computerMove(boolean side){
+
+        Random rRow = new Random();
+        Random rCol = new Random();
+
+        boolean moved = false;
+
+        resetAvailableMoves();
+
+        while(!moved){            
+            int selectRow = rRow.nextInt(ARRAY_SIZE - 1);
+            int selectCol = rCol.nextInt(ARRAY_SIZE - 1);
+
+            if(pieces[selectRow][selectCol] == null) { continue; }
+
+            if(pieces[selectRow][selectCol].isWhitePiece() != side) { continue; }
+
+            if(!setValidMoves(selectRow, selectCol)) { continue; }
+
+            while(!moved){                
+
+                for(int row = 0; row < ARRAY_SIZE; row++){
+
+                    for(int col = 0; col < ARRAY_SIZE; col++){
+
+                        if(!isValidMove(row, col)) { continue; }
+
+                        boolean doMove1 = new Random().nextBoolean();
+                        boolean doMove2 = new Random().nextBoolean();
+
+                        if(doMove1 && doMove2){
+
+                            if(canPromote(selectRow, selectCol, row, side)){
+                                pieces[selectRow][selectCol] = new Queen(selectRow, selectCol, side);
+                            }
+
+                            setPosition(selectRow, selectCol, row, col);
+                            
+                            moved = true;
+                            break;
+                        }
+                    }
+
+                    if(moved){
+                        break;
+                    }
+                }
+            }
+        }
+
+        System.out.println("Broke out!");
+
     }
 }
