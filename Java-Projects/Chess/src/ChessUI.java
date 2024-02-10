@@ -1,15 +1,21 @@
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
@@ -37,13 +43,16 @@ public class ChessUI extends JFrame implements ActionListener {
     private ChessBoard chessBoard;
 
     /** Game Starts with white side */
-    private boolean isWhiteTurn = true;
+    private boolean isWhiteTurn;
 
     /** Boolean for is user locks a piece to move */
-    private boolean pieceChosen = false;
+    private boolean pieceChosen;
 
     /** Can user play */
-    private boolean canPlay = true;
+    private boolean canPlay;
+
+    /** Stop Game From Playing */
+    private boolean gameEnd;
 
     /** User selected piece to move row */
     private int selectPieceRow;
@@ -57,23 +66,14 @@ public class ChessUI extends JFrame implements ActionListener {
     /** Col to Promote */
     private int promotionCol;
 
-    /** Player Choice for side */
-    private int playerChoice;
-
     /** Player Side to Play on */
-    private boolean playerSide;
+    private Boolean playerSide;
 
     /** Computer Side to Play on */
     private boolean computerSide;
 
     /** Play against Computer or not */
     private boolean playComputer;
-
-    /** Choices for the player side*/
-    private Object[] playerSideOptions = {"White", "Black", "Exit"};
-
-    /** Choices for the player play against*/
-    private Object[] playComputerOptions = {"Yes", "No", "Exit"};
 
     /** Promotion Menu */
     private JPopupMenu promoteMenu;
@@ -83,6 +83,54 @@ public class ChessUI extends JFrame implements ActionListener {
 
     /** Menu Items */
     private JMenuItem queenItem, rookItem, knightItem, bishopItem;
+
+    /** GUI Tabs */
+    JTabbedPane tabbedPane;
+
+    /** Press To Move to Chess Board */
+    JButton playButton;
+
+    /** Settings Tab */
+    JPanel settingsPane;
+
+    /** Player Side Choose Panel */
+    JPanel playerSidePanel;
+
+    /** Player Side Choose Label */
+    JLabel playerSideLabel;
+
+    /** Player Side Choose Combo Box */
+    JComboBox<String> playerSideBox;
+
+    /** Play Computer Panel */
+    JPanel playComputerPanel;
+
+    /** Play Computer Label */
+    JLabel playComputerLabel;
+
+    /** Play Computer Choose Box */
+    JComboBox<String> playComputerBox;
+
+    /** Computer Level Panel */
+    JPanel computerLevelPanel;
+
+    /** Computer Level Label */
+    JLabel computerLevelLabel;
+
+    /** Computer Level Choose Box */
+    JComboBox<String> computerLevelBox;
+
+    /** Player Side Choices Options */
+    String[] playerSideChoices = {"White", "Black", "None"};
+
+    /** Playing Computer Choices Options */
+    String[] playComputerChoices = {"No", "Yes"};
+
+    /** computer Level Choices Options */
+    String[] computerLevelChoices = {"0", "1"};
+
+    /** Computer Bot Level */
+    int computerLevel;
 
     /** RGB Value */
     private static final int RED_VALUE_1 = 225;
@@ -109,11 +157,149 @@ public class ChessUI extends JFrame implements ActionListener {
         setLocation(100, 100);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        //Default Values
+        playerSide = true;
+        playComputer = false;
+        computerLevel = 0;
+        isWhiteTurn = true;
+        pieceChosen = false;
+        canPlay = true;
+        gameEnd = false;
+
+        tabbedPane = new JTabbedPane();
+
         board = new JPanel(new GridLayout(GRID_SIZE, GRID_SIZE));
         buttons = new JButton[GRID_SIZE][GRID_SIZE];
 
+        settingsPane = new JPanel(new FlowLayout());
+
+        playButton = new JButton("Play");
+
+        playButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                tabbedPane.setSelectedIndex(0);
+            }            
+        });
+
+        //Player Side Panel Initialitation
+        //Combo Box changes player side when changing item
+        playerSidePanel = new JPanel();
+        playerSidePanel.setLayout(new BoxLayout(playerSidePanel, BoxLayout.PAGE_AXIS));
+        playerSideLabel = new JLabel("Choose Your Side");
+        playerSidePanel.setBackground(Color.LIGHT_GRAY);
+        playerSideBox = new JComboBox<>(playerSideChoices);
+        playerSideBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        playerSidePanel.add(playerSideLabel);
+        playerSidePanel.add(playerSideBox);
+
+        playerSideBox.addActionListener(new ActionListener() {            
+            public void actionPerformed(ActionEvent e){
+                String choice = (String)playerSideBox.getSelectedItem();
+
+                switch (choice) {
+                    case "White":
+                        playerSide = true;
+                        break;
+                    case "Black":
+                        playerSide = false;
+                        break;
+                    case "None":
+                        playerSide = null;
+                        break;
+                    default:
+                        break;
+                }
+
+                if(playComputer && playerSide != null){
+                    computerSide = !playerSide;
+
+                }
+
+                if(playComputer && playerSide == null){
+                    tabbedPane.setSelectedIndex(0);
+                }
+
+                computerMove();
+            }
+        });
+
+        //Wether to play against Computer Initialitation
+        //Combo Box changes if to play against computer
+        playComputerPanel = new JPanel();
+        playComputerPanel.setLayout(new BoxLayout(playComputerPanel, BoxLayout.PAGE_AXIS));
+        playComputerLabel = new JLabel("Play Against Computer?");
+        playComputerPanel.setBackground(Color.LIGHT_GRAY);
+        playComputerBox = new JComboBox<>(playComputerChoices);
+        playComputerBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        playComputerPanel.add(playComputerLabel);
+        playComputerPanel.add(playComputerBox);
+
+        playComputerBox.addActionListener(new ActionListener() {            
+            public void actionPerformed(ActionEvent e){
+                String choice = (String)playComputerBox.getSelectedItem();
+
+                switch (choice) {
+                    case "No":
+                        playComputer = false;
+                        break;
+                    case "Yes":
+                        playComputer = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                if(playComputer && playerSide == null){
+                    tabbedPane.setSelectedIndex(0);
+                }
+
+                computerMove();
+            }
+        });
+
+        //Computer Level initialization
+        //Changes the computer level
+        computerLevelPanel = new JPanel();
+        computerLevelPanel.setLayout(new BoxLayout(computerLevelPanel, BoxLayout.PAGE_AXIS));
+        computerLevelLabel = new JLabel("Choose Computer Level");
+        computerLevelPanel.setBackground(Color.LIGHT_GRAY);
+        computerLevelBox = new JComboBox<>(computerLevelChoices);
+        computerLevelBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        computerLevelPanel.add(computerLevelLabel);
+        computerLevelPanel.add(computerLevelBox);
+
+        computerLevelBox.addActionListener(new ActionListener() {            
+            public void actionPerformed(ActionEvent e){
+                String choice = (String)computerLevelBox.getSelectedItem();
+
+                switch (choice) {
+                    case "0":
+                        computerLevel = 0;
+                        break;
+                    case "1":
+                        computerLevel = 1;
+                        break;
+                    default:
+                        break;
+                }
+
+                computerMove();
+            }
+        });
+
+        //Add Created Panels For Combo Box
+        settingsPane.add(playerSidePanel);
+        settingsPane.add(playComputerPanel);
+        settingsPane.add(computerLevelPanel);
+        settingsPane.add(playButton);
+
+        //Add Component to tabs
+        tabbedPane.add("Chess", (Component)board);
+        tabbedPane.add("Settings", (Component)settingsPane);
+
+        settingsPane.setBackground(Color.LIGHT_GRAY);
         board.setBackground(Color.DARK_GRAY);
-        add(board); //add the primary JPanel
+        add(tabbedPane); //add the primary JPanel
 
         chessBoard = new ChessBoard(); //create instance of ChessBoard Class to handle game
 
@@ -198,34 +384,6 @@ public class ChessUI extends JFrame implements ActionListener {
 
         //make GUI visible to user
         setVisible(true);
-
-        //Show Dialog Box with Yes/No/Cancel option
-        playerChoice = JOptionPane.showOptionDialog(board, "Choose a Side!", "Side Chooser", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, 
-            null, playerSideOptions, playerSideOptions[2]);
-            
-        if(playerChoice == JOptionPane.YES_OPTION){
-            playerSide = true;
-        }
-        else if(playerChoice == JOptionPane.NO_OPTION){
-            playerSide = false;
-        }        
-        else {
-            System.exit(1);
-        }
-
-        playerChoice = JOptionPane.showOptionDialog(board, "Player Against Computer?", "Choose Opponent", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, 
-            null, playComputerOptions, playComputerOptions[2]);
-            
-        if(playerChoice == JOptionPane.YES_OPTION){
-            playComputer = true;
-            computerSide = !playerSide;
-        }
-        else if(playerChoice == JOptionPane.NO_OPTION){
-            playComputer = false;
-        }        
-        else {
-            System.exit(1);
-        }
 
         computerMove();
         
@@ -376,18 +534,38 @@ public class ChessUI extends JFrame implements ActionListener {
         chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
 
         processMove();
+
+        if(gameEnd){
+            gameEnd = false;
+            resetBoard();
+        }
     }
 
     private void computerMove(){
 
-        if(isWhiteTurn == playerSide || !playComputer) { return; }
+        if((Boolean)isWhiteTurn != computerSide || !playComputer || !canPlay) { return; }
 
-        chessBoard.computerMove(computerSide);
+        chessBoard.computerMove(computerSide, 0);
+
+        // if(playerSide == null){
+        //     chessBoard.computerMove(!computerSide, 0);
+        // }
 
         processMove();
+
+        if(playerSide == null && !gameEnd){
+            computerMove();
+        }
+
+        if(gameEnd){
+            gameEnd = false;
+            resetBoard();
+            return;
+        }
     }
 
     private void processMove(){
+
         //Update board after moving
         updateBoard();
         
@@ -443,7 +621,7 @@ public class ChessUI extends JFrame implements ActionListener {
             int choice = JOptionPane.showConfirmDialog(null, "Game Ends in Stalemate! Play Again? ");
             
             if(choice == JOptionPane.YES_OPTION){
-                resetBoard();
+                gameEnd = true;
             }
             else if(choice == JOptionPane.NO_OPTION){
                 System.exit(1);
@@ -451,6 +629,7 @@ public class ChessUI extends JFrame implements ActionListener {
             else {
                 canPlay = false;
             }
+            
         }
     }
 
@@ -490,7 +669,7 @@ public class ChessUI extends JFrame implements ActionListener {
         int choice = JOptionPane.showConfirmDialog(null, String.format("%s Wins! Play Again? ", side ? "White" : "Black"));
         
         if(choice == JOptionPane.YES_OPTION){
-            resetBoard();
+            gameEnd = true;
         }
         else if(choice == JOptionPane.NO_OPTION){
             System.exit(1);
@@ -548,6 +727,10 @@ public class ChessUI extends JFrame implements ActionListener {
             }
 
             background = !background;
+        }
+
+        if(playerSide == null){
+            computerMove();
         }
     }
 
