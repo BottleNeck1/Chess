@@ -1,11 +1,18 @@
-import java.io.File;
-
 /**
  * Pawn Class Object
  * 
  * @author David Martinez
  */
-public class Pawn extends Rook {
+public class Pawn extends Piece {
+
+    /** Name for piece */
+    private static final String NAME = "Bishop";
+
+    /** White Piece File Path */
+    private static final String WHITE_IMG_PATH = "src/resources/WhitePawn.png";
+
+    /** Black Piece File Path */
+    private static final String BLACK_IMG_PATH = "src/resources/BlackPawn.png";
 
     /** Starting Pawn Row */
     private int initialRow;
@@ -22,14 +29,7 @@ public class Pawn extends Rook {
      * @throws IllegalArgumentException if row or col is out of bounds
      */
     public Pawn(int row, int col, boolean isWhitePiece){
-        super(row, col, isWhitePiece);
-        this.name = "Pawn";
-        this.whiteImgFile = new File("src/resources/WhitePawn.png");
-        this.blackImgFile = new File("src/resources/BlackPawn.png");
-        this.row = row;
-        this.col = col;
-        this.isWhitePiece = isWhitePiece;
-        this.isFirstMove = true;
+        super(row, col, isWhitePiece, NAME, WHITE_IMG_PATH, BLACK_IMG_PATH);
         this.initialRow = row;
         this.canEnPassant = false;
     }
@@ -47,16 +47,16 @@ public class Pawn extends Rook {
             throw new IllegalArgumentException("Invalid Row or Col");
         }
 
-        if(isWhitePiece){
+        if(isWhitePiece()){
             return (
-                (row - 1 == moveRow && col == moveCol) ||
-                (row - 2 == moveRow && col == moveCol && isFirstMove)
+                (getRow() - 1 == moveRow && getCol() == moveCol) ||
+                (getRow() - 2 == moveRow && getCol() == moveCol && isFirstMove())
                 );
         } 
         else {
             return (
-                (row + 1 == moveRow && col == moveCol) ||
-                (row + 2 == moveRow && col == moveCol && isFirstMove)
+                (getRow() + 1 == moveRow && getCol() == moveCol) ||
+                (getRow() + 2 == moveRow && getCol() == moveCol && isFirstMove())
                 );
         }
     }
@@ -74,16 +74,16 @@ public class Pawn extends Rook {
             throw new IllegalArgumentException("Invalid Row or Col");
         }   
 
-        if(isWhitePiece){
+        if(isWhitePiece()){
             return (
-                (row - 1 == attackRow && col + 1 == attackCol) ||
-                (row - 1 == attackRow && col - 1 == attackCol)
+                (getRow() - 1 == attackRow && getCol() + 1 == attackCol) ||
+                (getRow() - 1 == attackRow && getCol() - 1 == attackCol)
                 );
         }
         else {
             return (
-                (row + 1 == attackRow && col + 1 == attackCol) ||
-                (row + 1 == attackRow && col - 1 == attackCol)
+                (getRow() + 1 == attackRow && getCol() + 1 == attackCol) ||
+                (getRow() + 1 == attackRow && getCol() - 1 == attackCol)
                 );
         }
     }
@@ -105,15 +105,15 @@ public class Pawn extends Rook {
         //     return true;
         // }
 
-        if(!canEnPassant || isFirstMove){
+        if(!canEnPassant || isFirstMove()){
             return false;
         }
 
-        if(Math.abs(row - initialRow) != 2){
+        if(Math.abs(getRow() - initialRow) != 2){
             return false;
         }
 
-        if(row != attackRow || Math.abs(attackCol - col) != 1){
+        if(getRow() != attackRow || Math.abs(attackCol - getCol()) != 1){
             return false;
         }
 

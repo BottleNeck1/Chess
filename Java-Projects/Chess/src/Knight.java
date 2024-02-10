@@ -1,12 +1,19 @@
-import java.io.File;
-
 /**
  * Knight Class Object
- * 
+ * row
  * @author David Martinez
  */
-public class Knight extends Rook {
-    
+public class Knight extends Piece {
+
+    /** Name for piece */
+    private static final String NAME = "Knight";
+
+    /** White Piece File Path */
+    private static final String WHITE_IMG_PATH = "src/resources/WhiteKnight.png";
+
+    /** Black Piece File Path */
+    private static final String BLACK_IMG_PATH = "src/resources/BlackKnight.png";
+
     /**
      * Knight Constructor
      * 
@@ -16,13 +23,7 @@ public class Knight extends Rook {
      * @throws IllegalArgumentException if row or col is out of bounds
      */
     public Knight(int row, int col, boolean isWhitePiece){
-        super(row, col, isWhitePiece);
-        this.name = "Knight";
-        this.whiteImgFile = new File("src/resources/WhiteKnight.png");
-        this.blackImgFile = new File("src/resources/BlackKnight.png");
-        this.row = row;
-        this.col = col;
-        this.isWhitePiece = isWhitePiece;
+        super(row, col, isWhitePiece, NAME, WHITE_IMG_PATH, BLACK_IMG_PATH);
     }
 
     /**
@@ -39,10 +40,10 @@ public class Knight extends Rook {
         }
         
         return (
-            (row + 2 == moveRow && (col + 1 == moveCol || col - 1 == moveCol)) ||
-            (row - 2 == moveRow && (col + 1 == moveCol || col - 1 == moveCol)) ||
-            (col + 2 == moveCol && (row + 1 == moveRow || row - 1 == moveRow)) ||
-            (col - 2 == moveCol && (row + 1 == moveRow || row - 1 == moveRow))
+            (getRow() + 2 == moveRow && (getCol() + 1 == moveCol || getCol() - 1 == moveCol)) ||
+            (getRow() - 2 == moveRow && (getCol() + 1 == moveCol || getCol() - 1 == moveCol)) ||
+            (getCol() + 2 == moveCol && (getRow() + 1 == moveRow || getRow() - 1 == moveRow)) ||
+            (getCol() - 2 == moveCol && (getRow() + 1 == moveRow || getRow() - 1 == moveRow))
             );
     }
 }

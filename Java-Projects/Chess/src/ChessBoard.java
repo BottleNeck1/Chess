@@ -728,10 +728,10 @@ public class ChessBoard {
                 boolean isMovingRight = isMovingDown(currentCol, fixCol);
 
                 //make king make thier first move
-                pieces[currentRow][currentCol].firstMove();
+                pieces[currentRow][currentCol].setFirstMove(false);
 
                 //make rook make their first move
-                pieces[isWhitePiece ? SEVEN_POS : 0][isMovingRight ? SEVEN_POS : 0].firstMove();
+                pieces[isWhitePiece ? SEVEN_POS : 0][isMovingRight ? SEVEN_POS : 0].setFirstMove(false);
 
                 //set rook position and move it
                 pieces[isWhitePiece ? SEVEN_POS : 0][isMovingRight ? SEVEN_POS : 0].setPosition(
@@ -806,7 +806,7 @@ public class ChessBoard {
         }
 
         //make piece make their first move is havnt already
-        pieces[currentRow][currentCol].firstMove();
+        pieces[currentRow][currentCol].setFirstMove(false);
 
         //move the selected piece to new space
         pieces[currentRow][currentCol].setPosition(newRow, fixCol);

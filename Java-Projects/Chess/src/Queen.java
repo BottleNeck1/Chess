@@ -1,11 +1,18 @@
-import java.io.File;
-
 /**
  * Queen Class Object
  * 
  * @author David Martinez
  */
-public class Queen extends Rook {
+public class Queen extends Piece {
+
+    /** Name for piece */
+    private static final String NAME = "Queen";
+
+    /** White Piece File Path */
+    private static final String WHITE_IMG_PATH = "src/resources/WhiteQueen.png";
+
+    /** Black Piece File Path */
+    private static final String BLACK_IMG_PATH = "src/resources/BlackQueen.png";
 
     /**
      * Bishop Constructor
@@ -16,13 +23,7 @@ public class Queen extends Rook {
      * @throws IllegalArgumentException if row or col is out of bounds
      */
     public Queen(int row, int col, boolean isWhitePiece){
-        super(row, col, isWhitePiece);
-        this.name = "Queen";
-        this.whiteImgFile = new File("src/resources/WhiteQueen.png");
-        this.blackImgFile = new File("src/resources/BlackQueen.png");
-        this.row = row;
-        this.col = col;
-        this.isWhitePiece = isWhitePiece;
+        super(row, col, isWhitePiece, NAME, WHITE_IMG_PATH, BLACK_IMG_PATH);
     }
 
     /**
@@ -38,8 +39,8 @@ public class Queen extends Rook {
             throw new IllegalArgumentException("Invalid Row or Col");
         }
         
-        Bishop b = new Bishop(row, col, isWhitePiece);
-        Rook r = new Rook(row, col, isWhitePiece);
+        Bishop b = new Bishop(getRow(), getCol(), isWhitePiece());
+        Rook r = new Rook(getRow(), getCol(), isWhitePiece());
 
         return b.canMove(moveRow, moveCol) || r.canMove(moveRow, moveCol);
     }

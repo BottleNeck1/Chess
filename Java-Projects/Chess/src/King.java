@@ -1,11 +1,18 @@
-import java.io.File;
-
 /**
  * King Class Object
  * 
  * @author David Martinez
  */
-public class King extends Rook {
+public class King extends Piece {
+
+    /** Name for piece */
+    private static final String NAME = "King";
+
+    /** White Piece File Path */
+    private static final String WHITE_IMG_PATH = "src/resources/WhiteKing.png";
+
+    /** Black Piece File Path */
+    private static final String BLACK_IMG_PATH = "src/resources/BlackKing.png";
 
     /**
      * Bishop Constructor
@@ -16,13 +23,7 @@ public class King extends Rook {
      * @throws IllegalArgumentException if row or col is out of bounds
      */
     public King(int row, int col, boolean isWhitePiece){
-        super(row, col, isWhitePiece);
-        this.name = "King";
-        this.whiteImgFile = new File("src/resources/WhiteKing.png");
-        this.blackImgFile = new File("src/resources/BlackKing.png");
-        this.row = row;
-        this.col = col;
-        this.isWhitePiece = isWhitePiece;
+        super(row, col, isWhitePiece, NAME, WHITE_IMG_PATH, BLACK_IMG_PATH);
     }
 
     /**
@@ -39,14 +40,14 @@ public class King extends Rook {
         }
 
         return (
-            (row + 1 == moveRow && col == moveCol) ||
-            (row - 1 == moveRow && col == moveCol) ||
-            (col + 1 == moveCol && row == moveRow) ||
-            (col - 1 == moveCol && row == moveRow) ||
-            (row + 1 == moveRow && col + 1 == moveCol) ||
-            (row + 1 == moveRow && col - 1 == moveCol) ||
-            (row - 1 == moveRow && col + 1 == moveCol) ||
-            (row - 1 == moveRow && col - 1 == moveCol)
+            (getRow() + 1 == moveRow && getCol() == moveCol) ||
+            (getRow() - 1 == moveRow && getCol() == moveCol) ||
+            (getCol() + 1 == moveCol && getRow() == moveRow) ||
+            (getCol() - 1 == moveCol && getRow() == moveRow) ||
+            (getRow() + 1 == moveRow && getCol() + 1 == moveCol) ||
+            (getRow() + 1 == moveRow && getCol() - 1 == moveCol) ||
+            (getRow() - 1 == moveRow && getCol() + 1 == moveCol) ||
+            (getRow() - 1 == moveRow && getCol() - 1 == moveCol)
             );
     }
 
@@ -59,7 +60,7 @@ public class King extends Rook {
      */
     public boolean isPossibleCastle(int moveRow, int moveCol){
 
-        if(row != moveRow || !isFirstMove){//if not is same row or not first move, cant castle
+        if(getRow() != moveRow || !isFirstMove()){//if not is same row or not first move, cant castle
             return false;
         }
 

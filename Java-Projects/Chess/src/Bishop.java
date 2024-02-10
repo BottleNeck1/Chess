@@ -1,11 +1,18 @@
-import java.io.File;
-
 /**
  * Bishop Class Object
  * 
  * @author David Martinez
  */
-public class Bishop extends Rook {
+public class Bishop extends Piece {
+
+    /** Name for piece */
+    private static final String NAME = "Bishop";
+
+    /** White Piece File Path */
+    private static final String WHITE_IMG_PATH = "src/resources/WhiteBishop.png";
+
+    /** Black Piece File Path */
+    private static final String BLACK_IMG_PATH = "src/resources/BlackBishop.png";
 
     /**
      * Bishop Constructor
@@ -16,13 +23,7 @@ public class Bishop extends Rook {
      * @throws IllegalArgumentException if row or col is out of bounds
      */
     public Bishop(int row, int col, boolean isWhitePiece){
-        super(row, col, isWhitePiece);
-        this.name = "Bishop";
-        this.whiteImgFile = new File("src/resources/WhiteBishop.png");
-        this.blackImgFile = new File("src/resources/BlackBishop.png");
-        this.row = row;
-        this.col = col;
-        this.isWhitePiece = isWhitePiece;
+        super(row, col, isWhitePiece, NAME, WHITE_IMG_PATH, BLACK_IMG_PATH);
     }
 
     /**
@@ -38,6 +39,6 @@ public class Bishop extends Rook {
             throw new IllegalArgumentException("Invalid Row or Col");
         }
         
-        return Math.abs(row - moveRow) == Math.abs(col - moveCol);
+        return Math.abs(getRow() - moveRow) == Math.abs(getCol() - moveCol);
     }
 }
