@@ -1216,7 +1216,9 @@ public class ChessBoard {
             case 0:
                 computerLevelZero(side);
                 break;
-        
+            case 1:
+                computerLevelOne(side);
+                break;
             default:
                 computerLevelZero(side);
                 break;
@@ -1285,95 +1287,110 @@ public class ChessBoard {
 
     private void computerLevelOne(boolean side){
 
-        int bestRow;
-        int bestCol;        
+        int row = -1;
+        int col = -1;
+        int bestRow = -1;
+        int bestCol = -1;        
         int bestValue = 0;
         boolean doBreak = false;
-
-        Random rRow = new Random();
-        Random rCol = new Random();
-
-        boolean moved = false;
-
-        //continue until finds a valid move
-        while(!moved){  
             
-            for(int startRow = 0; startRow < ARRAY_SIZE; startRow++){
+        for(int startRow = 0; startRow < ARRAY_SIZE; startRow++){
 
-                for(int startCol = 0; startCol < ARRAY_SIZE; startCol++){
+            for(int startCol = 0; startCol < ARRAY_SIZE; startCol++){
 
-                    if(!setValidMoves(startRow, startCol)) { continue; }
+                if(isNull(startRow, startCol)) { continue; }
 
-                    for(int endRow = 0; endRow < ARRAY_SIZE; endRow++){
+                if(!isCorrectSide(startRow, startCol, side)) { continue; }
 
-                        for(int endCol = 0; endCol < ARRAY_SIZE; endCol++){
+                resetAvailableMoves();
 
-                            if(!isValidMove(endRow, endCol)) { continue; }
+                if(!setValidMoves(startRow, startCol)) { continue; }
 
-                            if(pieces[endRow][endCol] instanceof Queen){
-                               bestValue = QUEEN_VALUE;
-                               bestRow = endRow;
-                               bestCol = endCol;
-                               break;
+                for(int endRow = 0; endRow < ARRAY_SIZE; endRow++){
+
+                    for(int endCol = 0; endCol < ARRAY_SIZE; endCol++){
+
+                        if(!isValidMove(endRow, endCol)) { continue; }
+
+                        if(pieces[endRow][endCol] instanceof Queen){//Attacking a Queen
+                            bestValue = QUEEN_VALUE;
+                            bestRow = endRow;
+                            bestCol = endCol;
+                            row = startRow;
+                            col = startCol;
+                            doBreak = true;
+                            break;
+                        }
+                        if(pieces[endRow][endCol] instanceof Bishop || pieces[endRow][endCol] instanceof Knight){//Attacking A Knight/Bishop
+                            
+                            if(BISHOP_KNIGHT_VALUE > bestValue){
+                                bestValue = BISHOP_KNIGHT_VALUE;
+                                bestRow = endRow;
+                                bestCol = endCol;
+                                row = startRow;                                
+                                col = startCol;
+                                break;
                             }
                         }
+                        if(pieces[endRow][endCol] instanceof Pawn){//Attacking a Pawn
+                        
+                            if(PAWN_VALUE > bestValue){
+                                bestValue = PAWN_VALUE;
+                                bestRow = endRow;
+                                bestCol = endCol;
+                                row = startRow;
+                                col = startCol;
+                                break;
+                            }
+                        }
+                        if(pieces[endRow][endCol] instanceof Rook){//Atacking a Rook
+                        
+                            if(ROOK_VALUE > bestValue){
+                                bestValue = ROOK_VALUE;
+                                bestRow = endRow;
+                                bestCol = endCol;
+                                row = startRow;
+                                col = startCol;
+                                break;
+                            }
+                        }
+                        if(pieces[endRow][endCol] == null){//No attack
 
-                        if(doBreak) { break; }
+                            if(bestRow == -1){
+                                bestRow = endRow;
+                                bestCol = endCol;
+                                row = startRow;
+                                col = startCol;
+                                break;
+                            }
+
+                            boolean bool = new Random().nextBoolean();
+
+                            if(bool){
+                                bestRow = endRow;
+                                bestCol = endCol;
+                                row = startRow;
+                                col = startCol;
+                                break;
+                            }
+                        }
                     }
 
                     if(doBreak) { break; }
                 }
 
+                
+
                 if(doBreak) { break; }
             }
 
-            //get two random int for the row/col
-            int selectRow = rRow.nextInt(ARRAY_SIZE - 1);
-            int selectCol = rCol.nextInt(ARRAY_SIZE - 1);
-
-            //reset if piece is null
-            if(pieces[selectRow][selectCol] == null) { continue; }
-
-            //reset if piece is not correct side
-            if(pieces[selectRow][selectCol].isWhitePiece() != side) { continue; }
-
-            //reset if piece has no valid moves
-            if(!setValidMoves(selectRow, selectCol)) { continue; }
-
-            //continue until finds a valid move
-            while(!moved){                
-
-                for(int row = 0; row < ARRAY_SIZE; row++){
-
-                    for(int col = 0; col < ARRAY_SIZE; col++){
-
-                        //skip if not a valid move
-                        if(!isValidMove(row, col)) { continue; }
-
-
-                        boolean doMove1 = new Random().nextBoolean();
-                        boolean doMove2 = new Random().nextBoolean();
-
-                        //25% chance for a valid move to be chosen
-                        if(doMove1 && doMove2){
-
-                            //automatically promote pawn to queen
-                            if(canPromote(selectRow, selectCol, row, side)){
-                                pieces[selectRow][selectCol] = new Queen(selectRow, selectCol, side);
-                            }
-
-                            setPosition(selectRow, selectCol, row, col);
-                            
-                            moved = true;
-                            break;
-                        }
-                    }
-
-                    if(moved){
-                        break;
-                    }
-                }
-            }
+            if(doBreak) { break; }
         }
+
+        if(canPromote(row, col, bestRow, side)){
+            pieces[row][col] = new Queen(row, col, side);
+        }
+
+        setPosition(row, col, bestRow, bestCol);
     }
 }

@@ -545,7 +545,7 @@ public class ChessUI extends JFrame implements ActionListener {
 
         if((Boolean)isWhiteTurn != computerSide || !playComputer || !canPlay) { return; }
 
-        chessBoard.computerMove(computerSide, 0);
+        chessBoard.computerMove(computerSide, computerLevel);
 
         // if(playerSide == null){
         //     chessBoard.computerMove(!computerSide, 0);
