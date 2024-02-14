@@ -1,3 +1,4 @@
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -33,11 +34,15 @@ public class ChessUI extends JFrame implements ActionListener {
     /** Window Size */
     private static final int SIZE = 500;
 
+    private JPanel chessPanel;
+
     /** Grid Board JPanel */
     private JPanel board;
 
     /** Buttons 2D Array */
     private JButton[][] buttons;
+
+    private JButton playButton;
 
     /** Chess Game Class Instance */
     private ChessBoard chessBoard;
@@ -75,6 +80,12 @@ public class ChessUI extends JFrame implements ActionListener {
     /** Play against Computer or not */
     private boolean playComputer;
 
+    private boolean watchComputer;
+
+    private boolean continueGame;
+
+    private boolean isStaleMate;
+
     /** Promotion Menu */
     private JPopupMenu promoteMenu;
 
@@ -85,52 +96,61 @@ public class ChessUI extends JFrame implements ActionListener {
     private JMenuItem queenItem, rookItem, knightItem, bishopItem;
 
     /** GUI Tabs */
-    JTabbedPane tabbedPane;
+    private JTabbedPane tabbedPane;
 
     /** Press To Move to Chess Board */
-    JButton playButton;
+    private JButton settingsPlayButton;
 
     /** Settings Tab */
-    JPanel settingsPane;
+    private JPanel settingsPane;
 
     /** Player Side Choose Panel */
-    JPanel playerSidePanel;
+    private JPanel playerSidePanel;
 
     /** Player Side Choose Label */
-    JLabel playerSideLabel;
+    private JLabel playerSideLabel;
 
     /** Player Side Choose Combo Box */
-    JComboBox<String> playerSideBox;
+    private JComboBox<String> playerSideBox;
 
     /** Play Computer Panel */
-    JPanel playComputerPanel;
+    private JPanel playComputerPanel;
 
     /** Play Computer Label */
-    JLabel playComputerLabel;
+    private JLabel playComputerLabel;
 
     /** Play Computer Choose Box */
-    JComboBox<String> playComputerBox;
+    private JComboBox<String> playComputerBox;
 
     /** Computer Level Panel */
-    JPanel computerLevelPanel;
+    private JPanel computerLevelPanel;
 
     /** Computer Level Label */
-    JLabel computerLevelLabel;
+    private JLabel computerLevelLabel;
 
     /** Computer Level Choose Box */
-    JComboBox<String> computerLevelBox;
+    private JComboBox<String> computerLevelBox;
+
+    private JPanel watchComputerPanel;
+
+    private JLabel watchComputerLabel;
+
+    private JComboBox<String> watchComputerBox;
 
     /** Player Side Choices Options */
-    String[] playerSideChoices = {"White", "Black", "None"};
+    private final String[] playerSideChoices = {"White", "Black", "None"};
 
     /** Playing Computer Choices Options */
-    String[] playComputerChoices = {"No", "Yes"};
+    private final String[] playComputerChoices = {"No", "Yes"};
 
     /** computer Level Choices Options */
-    String[] computerLevelChoices = {"0", "1"};
+    private final String[] computerLevelChoices = {"0", "1"};
+
+    /** Watch Computer Turn by Turn Options */
+    private final String[] watchComputerChoices = {"No", "Yes"};
 
     /** Computer Bot Level */
-    int computerLevel;
+    private int computerLevel;
 
     /** RGB Value */
     private static final int RED_VALUE_1 = 225;
@@ -165,17 +185,31 @@ public class ChessUI extends JFrame implements ActionListener {
         pieceChosen = false;
         canPlay = true;
         gameEnd = false;
+        continueGame = false;
 
         tabbedPane = new JTabbedPane();
+
+        //Master Chess Panel
+        chessPanel = new JPanel(new BorderLayout());
 
         board = new JPanel(new GridLayout(GRID_SIZE, GRID_SIZE));
         buttons = new JButton[GRID_SIZE][GRID_SIZE];
 
-        settingsPane = new JPanel(new FlowLayout());
-
+        
         playButton = new JButton("Play");
-
         playButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                if(!watchComputer){ return; }
+
+                continueGame = true; //Continue sim when user clicks the button
+                computerSide = isWhiteTurn;
+                computerMove();
+            }
+        });
+
+        settingsPane = new JPanel(new FlowLayout());
+        settingsPlayButton = new JButton("Play");
+        settingsPlayButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 tabbedPane.setSelectedIndex(0);
             }            
@@ -216,7 +250,10 @@ public class ChessUI extends JFrame implements ActionListener {
                 }
 
                 if(playComputer && playerSide == null){
-                    tabbedPane.setSelectedIndex(0);
+                    //tabbedPane.setSelectedIndex(0);
+                    computerSide = isWhiteTurn;
+                    watchComputerBox.setEnabled(true);
+                    chessPanel.add(playButton, BorderLayout.SOUTH);
                 }
 
                 computerMove();
@@ -250,7 +287,10 @@ public class ChessUI extends JFrame implements ActionListener {
                 }
 
                 if(playComputer && playerSide == null){
-                    tabbedPane.setSelectedIndex(0);
+                    //tabbedPane.setSelectedIndex(0);
+                    computerSide = isWhiteTurn;
+                    watchComputerBox.setEnabled(true);
+                    chessPanel.add(playButton, BorderLayout.SOUTH);
                 }
 
                 computerMove();
@@ -287,14 +327,50 @@ public class ChessUI extends JFrame implements ActionListener {
             }
         });
 
+        //Watch Computer Play ComboBox Initialitation
+        //Combo Box changes player side when changing item
+        watchComputerPanel = new JPanel();
+        watchComputerPanel.setLayout(new BoxLayout(watchComputerPanel, BoxLayout.PAGE_AXIS));
+        watchComputerLabel = new JLabel("Watch Game?");
+        watchComputerPanel.setBackground(Color.LIGHT_GRAY);
+        watchComputerBox = new JComboBox<>(watchComputerChoices);
+        watchComputerBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        watchComputerPanel.add(watchComputerLabel);
+        watchComputerPanel.add(watchComputerBox);
+
+        watchComputerBox.addActionListener(new ActionListener() {            
+            public void actionPerformed(ActionEvent e){
+                String choice = (String)watchComputerBox.getSelectedItem();
+
+                switch (choice) {
+                    case "Yes":
+                        watchComputer = true;
+                        continueGame = false;
+                        break;
+                    case "No":
+                        watchComputer = false;
+
+                        chessPanel.remove(playButton);
+                        break;
+                    default:
+                        break;
+                }
+
+                computerMove();
+            }
+        });
+
+        watchComputerBox.setEnabled(false);
+
         //Add Created Panels For Combo Box
         settingsPane.add(playerSidePanel);
         settingsPane.add(playComputerPanel);
         settingsPane.add(computerLevelPanel);
-        settingsPane.add(playButton);
+        settingsPane.add(watchComputerPanel);
+        settingsPane.add(settingsPlayButton);
 
         //Add Component to tabs
-        tabbedPane.add("Chess", (Component)board);
+        tabbedPane.add("Chess", (Component)chessPanel);
         tabbedPane.add("Settings", (Component)settingsPane);
 
         settingsPane.setBackground(Color.LIGHT_GRAY);
@@ -337,6 +413,9 @@ public class ChessUI extends JFrame implements ActionListener {
             }
             background = !background;
         }       
+
+        //Add board to Chess Panel after buttons are initialized
+        chessPanel.add(board, BorderLayout.CENTER);
 
         //new pop up menu for promotion
         promoteMenu = new JPopupMenu();
@@ -428,7 +507,7 @@ public class ChessUI extends JFrame implements ActionListener {
                     else { //if a player has chosen a piece
 
                         //when player selects a button what is not a valid move, do nothing
-                        if(!chessBoard.isValidMove(row, col)){
+                        if(!chessBoard.isValidMove(row, col) || playerSide == null){
                             break;
                         }
                         
@@ -535,17 +614,24 @@ public class ChessUI extends JFrame implements ActionListener {
 
         processMove();
 
-        if(gameEnd){
-            gameEnd = false;
+        if(gameEnd && canPlay){
             resetBoard();
         }
     }
 
     private void computerMove(){
 
-        if((Boolean)isWhiteTurn != computerSide || !playComputer || !canPlay) { return; }
+        if((Boolean)isWhiteTurn != computerSide && playerSide != null) { return; }
 
-        chessBoard.computerMove(computerSide, computerLevel);
+        if(!playComputer || !canPlay || !continueGame) { return; }
+
+        try {
+            chessBoard.computerMove(computerSide, computerLevel);
+        } catch (IllegalArgumentException e) {
+            //TODO: add a popup
+            isStaleMate = true;
+            isStaleMate();
+        }
 
         // if(playerSide == null){
         //     chessBoard.computerMove(!computerSide, 0);
@@ -553,12 +639,15 @@ public class ChessUI extends JFrame implements ActionListener {
 
         processMove();
 
+        if(watchComputer && continueGame){
+            continueGame = false;
+        }
+
         if(playerSide == null && !gameEnd){
             computerMove();
         }
 
-        if(gameEnd){
-            gameEnd = false;
+        if(gameEnd && canPlay){
             resetBoard();
             return;
         }
@@ -615,13 +704,14 @@ public class ChessUI extends JFrame implements ActionListener {
     }
 
     private void isStaleMate(){
-        if(chessBoard.isStaleMate(isWhiteTurn)) {
+        if(chessBoard.isStaleMate(isWhiteTurn) || isStaleMate) {
 
             //Show Dialog Box with Yes/No/Cancel option
             int choice = JOptionPane.showConfirmDialog(null, "Game Ends in Stalemate! Play Again? ");
+            gameEnd = true;
             
             if(choice == JOptionPane.YES_OPTION){
-                gameEnd = true;
+                //
             }
             else if(choice == JOptionPane.NO_OPTION){
                 System.exit(1);
@@ -667,9 +757,10 @@ public class ChessUI extends JFrame implements ActionListener {
 
         //Show Dialog Box with Yes/No/Cancel option
         int choice = JOptionPane.showConfirmDialog(null, String.format("%s Wins! Play Again? ", side ? "White" : "Black"));
+        gameEnd = true;
         
         if(choice == JOptionPane.YES_OPTION){
-            gameEnd = true;
+            //
         }
         else if(choice == JOptionPane.NO_OPTION){
             System.exit(1);
@@ -691,6 +782,7 @@ public class ChessUI extends JFrame implements ActionListener {
         //Resets turn to white and piece is not chosen on start
         pieceChosen = false;
         isWhiteTurn = true;
+        gameEnd = false;
 
         //makes new chessboard instance
         chessBoard = new ChessBoard();

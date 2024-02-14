@@ -2,6 +2,10 @@ import java.awt.Image;
 import java.util.Arrays;
 import java.util.Random;
 
+import javax.naming.TimeLimitExceededException;
+
+import java.util.ArrayList;
+
 /**
  * Chess Board Class Object
  * 
@@ -60,8 +64,12 @@ public class ChessBoard {
     /** Black King */
     private King blackKing;
 
+    private int simTurns;
+
     /** ChessBoard Constructor */
     public ChessBoard(){
+
+        simTurns = 0;
 
         //sets inital board
         setBoard();
@@ -1207,6 +1215,7 @@ public class ChessBoard {
      * Stimulate Random Computer Move
      * @param side computer side
      * @param level Computer Movement Level
+     * @throws IllegalArgumentException if game turns exceeds 100
      */
     public void computerMove(boolean side, int level){
 
@@ -1224,6 +1233,11 @@ public class ChessBoard {
                 break;
         }
 
+        simTurns++;
+
+        if(simTurns >= 200){
+            throw new IllegalArgumentException("Game end in Stalemate");
+        }
     }
 
     private void computerLevelZero(boolean side){
@@ -1293,26 +1307,34 @@ public class ChessBoard {
         int bestCol = -1;        
         int bestValue = 0;
         boolean doBreak = false;
+
+        ArrayList<int[]> randomMoves = new ArrayList<>();
             
         for(int startRow = 0; startRow < ARRAY_SIZE; startRow++){
 
             for(int startCol = 0; startCol < ARRAY_SIZE; startCol++){
 
+                //Skip if peice is null
                 if(isNull(startRow, startCol)) { continue; }
 
+                //Skip if piece isnt the right side
                 if(!isCorrectSide(startRow, startCol, side)) { continue; }
 
+                //reset marked moves
                 resetAvailableMoves();
 
+                //Skip if no available moves
                 if(!setValidMoves(startRow, startCol)) { continue; }
 
+                //Iterate to find best move
                 for(int endRow = 0; endRow < ARRAY_SIZE; endRow++){
 
                     for(int endCol = 0; endCol < ARRAY_SIZE; endCol++){
 
+                        //Skip if not a valid move
                         if(!isValidMove(endRow, endCol)) { continue; }
 
-                        if(pieces[endRow][endCol] instanceof Queen){//Attacking a Queen
+                        if(pieces[endRow][endCol] instanceof Queen){//Attacking a Queen, priority
                             bestValue = QUEEN_VALUE;
                             bestRow = endRow;
                             bestCol = endCol;
@@ -1354,25 +1376,28 @@ public class ChessBoard {
                                 break;
                             }
                         }
-                        if(pieces[endRow][endCol] == null){//No attack
+                        if(pieces[endRow][endCol] == null && bestValue == 0){//No attack
 
-                            if(bestRow == -1){
-                                bestRow = endRow;
-                                bestCol = endCol;
-                                row = startRow;
-                                col = startCol;
-                                break;
-                            }
+                            // if(bestRow == -1){
+                            //     bestRow = endRow;
+                            //     bestCol = endCol;
+                            //     row = startRow;
+                            //     col = startCol;
+                            //     break;
+                            // }
 
-                            boolean bool = new Random().nextBoolean();
+                            // boolean bool = new Random().nextBoolean();
 
-                            if(bool){
-                                bestRow = endRow;
-                                bestCol = endCol;
-                                row = startRow;
-                                col = startCol;
-                                break;
-                            }
+                            // if(bool){
+                            //     bestRow = endRow;
+                            //     bestCol = endCol;
+                            //     row = startRow;
+                            //     col = startCol;
+                            //     break;
+                            // }
+
+                            int[] moves = {startRow, startCol, endRow, endCol};
+                            randomMoves.add(moves);
                         }
                     }
 
@@ -1385,6 +1410,20 @@ public class ChessBoard {
             }
 
             if(doBreak) { break; }
+        }
+
+        if(bestValue == 0){
+            
+            int rIdx = 0;
+            if(randomMoves.size() != 1){
+                rIdx = new Random().nextInt(randomMoves.size() - 1);
+            }
+            int[] move = randomMoves.get(rIdx);
+
+            row = move[0];
+            col = move[1];
+            bestRow = move[2];
+            bestCol = move[3];
         }
 
         if(canPromote(row, col, bestRow, side)){
