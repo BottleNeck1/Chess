@@ -2,7 +2,6 @@ import java.awt.Image;
 import java.util.Arrays;
 import java.util.Random;
 
-import javax.naming.TimeLimitExceededException;
 
 import java.util.ArrayList;
 
