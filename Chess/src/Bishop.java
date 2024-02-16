@@ -26,6 +26,10 @@ public class Bishop extends Piece {
         super(row, col, isWhitePiece, NAME, WHITE_IMG_PATH, BLACK_IMG_PATH);
     }
 
+    public Bishop(Bishop other){
+        super(other);
+    }
+
     /**
      * Checks moveRow and moveCol for valid movement
      * @param moveRow new row to check 

@@ -6,7 +6,7 @@
 public class Pawn extends Piece {
 
     /** Name for piece */
-    private static final String NAME = "Bishop";
+    private static final String NAME = "Pawn";
 
     /** White Piece File Path */
     private static final String WHITE_IMG_PATH = "src/resources/WhitePawn.png";
@@ -32,6 +32,12 @@ public class Pawn extends Piece {
         super(row, col, isWhitePiece, NAME, WHITE_IMG_PATH, BLACK_IMG_PATH);
         this.initialRow = row;
         this.canEnPassant = false;
+    }
+
+    public Pawn(Pawn other){
+        super(other);
+        this.initialRow = other.initialRow;
+        this.canEnPassant = other.canEnPassant;
     }
 
     /**

@@ -26,6 +26,10 @@ public class Knight extends Piece {
         super(row, col, isWhitePiece, NAME, WHITE_IMG_PATH, BLACK_IMG_PATH);
     }
 
+    public Knight(Knight other){
+        super(other);
+    }
+
     /**
      * Checks moveRow and moveCol for valid movement
      * @param moveRow new row to check 

@@ -27,6 +27,10 @@ public class Rook extends Piece {
         super(row, col, isWhitePiece, NAME, WHITE_IMG_PATH, BLACK_IMG_PATH);
     }
 
+    public Rook(Rook other){
+        super(other);
+    }
+
     /**
      * Checks moveRow and moveCol for valid movement
      * @param moveRow new row to check 

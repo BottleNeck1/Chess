@@ -10,16 +10,18 @@ import java.util.ArrayList;
  * 
  * @author David Martinez
  */
-public class ChessBoard {
+public class ChessBoard{
 
     /** Chess Board  Size */
-    private static final int ARRAY_SIZE = 8;
+    public static final int ARRAY_SIZE = 8;
     
     /** 2D array of Chess pieces */
     private Piece[][] pieces = new Piece[ARRAY_SIZE][ARRAY_SIZE];
 
     /** 2D array of available moves */
     private boolean[][] validMoves = new boolean[ARRAY_SIZE][ARRAY_SIZE];
+
+    private ChessBot chessBot;
 
     /** 7 Grid Position */
     private static final int SEVEN_POS = 7;
@@ -51,6 +53,8 @@ public class ChessBoard {
     /** Is Black King Under Check */
     private boolean isBlackCheck;
 
+    private boolean isWhiteTurn;
+
     /** White Rooks */
     private Rook[] whiteRooks;
 
@@ -69,13 +73,63 @@ public class ChessBoard {
     public ChessBoard(){
 
         simTurns = 0;
+        isWhiteTurn = true;
 
         //sets inital board
         setBoard();
     }
 
+    public ChessBoard(ChessBoard other){
+        this.pieces = new Piece[ARRAY_SIZE][ARRAY_SIZE];
+
+        for(int row = 0; row < ARRAY_SIZE; row++){
+            for(int col = 0; col < ARRAY_SIZE; col++){
+                Piece p = other.getPiece(row, col);
+                if(p == null){
+                    this.pieces[row][col] = null;
+                }
+                if(p instanceof Pawn){
+                    this.pieces[row][col] = new Pawn((Pawn)p);
+                }
+                if(p instanceof Knight){
+                    this.pieces[row][col] = new Knight((Knight)p);
+                }
+                if(p instanceof Bishop){
+                    this.pieces[row][col] = new Bishop((Bishop)p);
+                }
+                if(p instanceof Rook){
+                    this.pieces[row][col] = new Rook((Rook)p);
+                }
+                if(p instanceof Queen){
+                    this.pieces[row][col] = new Queen((Queen)p);
+                }
+                if(p instanceof King){
+                    this.pieces[row][col] = new King((King)p);
+                }
+                
+            }
+        }
+
+        this.whiteRooks = new Rook[2];
+        this.whiteRooks[0] = new Rook((Rook)other.whiteRooks[0]);
+        this.whiteRooks[1] = new Rook((Rook)other.whiteRooks[1]);
+
+        this.blackRooks = new Rook[2];
+        this.blackRooks[0] = new Rook((Rook)other.blackRooks[0]);
+        this.blackRooks[1] = new Rook((Rook)other.blackRooks[1]);
+
+        this.whiteKing = new King((King)other.whiteKing);
+        this.blackKing = new King((King)other.blackKing);
+
+        this.isWhiteTurn = other.isWhiteTurn;
+    }
+
+    // public ChessBoard(ChessBoard chessBoard){
+    //     this.
+    // }
+
     /** Sets the chess board up for play */
-    public void setBoard(){
+    private void setBoard(){
 
         //sets all values in validMoves to false
         for(int i = 0; i < ARRAY_SIZE; i++){
@@ -162,6 +216,36 @@ public class ChessBoard {
         }
 
         return null;
+    }
+
+    /**
+     * Return the instance of piece at the specified row and column
+     * @param row piece row
+     * @param col piece column
+     * @return a piece instance
+     */
+    public Piece getPiece(int row, int col){
+        return pieces[row][col];
+    }
+
+    public Piece[][] getPieces(){
+        return pieces;
+    }
+
+    public Rook[] getWhiteRooks(){
+        return whiteRooks;
+    }
+
+    public Rook[] getBlackRooks(){
+        return blackRooks;
+    }
+
+    public King getWhiteKing(){
+        return whiteKing;
+    }
+
+    public King getBlackKing(){
+        return blackKing;
     }
 
     /**
@@ -700,6 +784,87 @@ public class ChessBoard {
         return pieces[row][col].isWhitePiece() == isWhiteTurn;
     }
 
+    public ArrayList<Move> allPossibleMoves(){
+
+        ArrayList<Move> moves = new ArrayList<>();
+
+        for(int startRow = 0; startRow < ChessBoard.ARRAY_SIZE; startRow++){
+
+            for(int startCol = 0; startCol < ChessBoard.ARRAY_SIZE; startCol++){
+
+                if(pieces[startRow][startCol] == null) { continue; }
+
+                if(pieces[startRow][startCol].isWhitePiece() != isWhiteTurn) { continue; }
+
+                resetAvailableMoves();
+
+                if(!setValidMoves(startRow, startCol)) { continue; }
+
+                for(int endRow = 0; endRow < ChessBoard.ARRAY_SIZE; endRow++){
+
+                    for(int endCol = 0; endCol < ChessBoard.ARRAY_SIZE; endCol++){
+
+                        if(!isValidMove(endRow, endCol)) { continue; }
+
+                        moves.add(new Move(startRow, startCol, endRow, endCol));
+                    }
+                }
+            }
+        }
+
+        return moves;
+    }
+
+    public void setMove(int currentRow, int currentCol, int newRow, int newCol){
+        setPosition(currentRow, currentCol, newRow, newCol);
+        isWhiteTurn = !isWhiteTurn;
+    }
+
+    public void setMove(Move move){
+        setPosition(move.getStartRow(), move.getStartCol(), move.getEndRow(), move.getEndCol());
+        isWhiteTurn = !isWhiteTurn;
+    }
+
+    public void revertMove(Move move){
+        
+        Piece temp = pieces[move.getStartRow()][move.getStartCol()];
+        pieces[move.getStartRow()][move.getStartCol()] = pieces[move.getEndRow()][move.getEndCol()];
+        pieces[move.getEndRow()][move.getEndCol()] = temp;
+
+        isWhiteTurn = !isWhiteTurn;
+    }
+
+    public void setBoardState(Piece[][] pieces){
+        this.pieces = pieces;
+    }
+
+    public void setBoardState(ChessBoard chessBoard){
+        this.pieces = chessBoard.pieces;
+        this.validMoves = chessBoard.validMoves;
+        this.isWhiteCheck = chessBoard.isWhiteCheck;
+        this.isBlackCheck = chessBoard.isBlackCheck;
+        this.isWhiteTurn = chessBoard.isWhiteTurn;
+        this.whiteRooks = chessBoard.whiteRooks;
+        this.blackRooks = chessBoard.blackRooks;
+        this.whiteKing = chessBoard.whiteKing;
+        this.blackKing = chessBoard.blackKing;
+    }
+
+    public static ChessBoard copy(ChessBoard other){
+        ChessBoard newChessBoard = new ChessBoard();
+        newChessBoard.pieces = other.pieces;
+        newChessBoard.validMoves = other.validMoves;
+        newChessBoard.isWhiteCheck = other.isWhiteCheck;
+        newChessBoard.isBlackCheck = other.isBlackCheck;
+        newChessBoard.isWhiteTurn = other.isWhiteTurn;
+        newChessBoard.whiteRooks = other.whiteRooks;
+        newChessBoard.blackRooks = other.blackRooks;
+        newChessBoard.whiteKing = other.whiteKing;
+        newChessBoard.blackKing = other.blackKing;
+
+        return newChessBoard;
+    }
+
     /**
      * Sets the position of object at currentRow/Col to the newRow/Col
      * and makes the object at currentRow/Col to null
@@ -719,6 +884,12 @@ public class ChessBoard {
 
         if(newRow < 0 || newRow >= ARRAY_SIZE || newCol < 0 || newCol >= ARRAY_SIZE){
             throw new IllegalArgumentException("Invalid new row or col");
+        }
+
+        if(pieces[currentRow][currentCol] == null){
+            System.out.println(String.format("StartRow:%d\nStartCol:%d\nEndRow:%d\nEndCol:%d\nMoves:%d\n", 
+            currentRow, currentCol, newRow, newCol, chessBot.getMovesChecked()));
+            System.out.println(toString());
         }
 
         boolean isWhitePiece = pieces[currentRow][currentCol].isWhitePiece();
@@ -958,14 +1129,16 @@ public class ChessBoard {
      */
     public boolean isCheckMate(boolean side){
 
-        if(side){
+        if(!isCheck(side)) { return false; }
 
-            if(!isWhiteCheck) { return false; }
-        }
-        else {
+        // if(side){
 
-            if(!isBlackCheck) { return false; }
-        }
+        //     if(!isWhiteCheck) { return false; }
+        // }
+        // else {
+
+        //     if(!isBlackCheck) { return false; }
+        // }
 
         boolean canKingMove = setValidMoves(getKingRow(side), getKingCol(side));
 
@@ -1210,6 +1383,10 @@ public class ChessBoard {
         return false;
     }
 
+    public void resetSimTurns(){
+        simTurns = 0;
+    }
+
     /**
      * Stimulate Random Computer Move
      * @param side computer side
@@ -1219,16 +1396,18 @@ public class ChessBoard {
     public void computerMove(boolean side, int level){
 
         resetAvailableMoves();
+        //ChessBot bot = new ChessBot();
+
+        chessBot = new ChessBot();
+        Move moveChosen = null;
 
         switch (level) {
             case 0:
                 computerLevelZero(side);
                 break;
-            case 1:
-                computerLevelOne(side);
-                break;
             default:
-                computerLevelZero(side);
+                moveChosen = chessBot.findBestMove(this, level);
+                setMove(moveChosen);
                 break;
         }
 
@@ -1246,12 +1425,19 @@ public class ChessBoard {
         Random rCol = new Random();
 
         boolean moved = false;
+        int iterations = 0;
 
         //continue until finds a valid move
         while(!moved){            
             //get two random int for the row/col
             int selectRow = rRow.nextInt(ARRAY_SIZE - 1);
             int selectCol = rCol.nextInt(ARRAY_SIZE - 1);
+
+            if(iterations == 40){
+                computerLevelOne(side);
+                return;
+            }
+            iterations++;
 
             //reset if piece is null
             if(pieces[selectRow][selectCol] == null) { continue; }
@@ -1260,8 +1446,8 @@ public class ChessBoard {
             if(pieces[selectRow][selectCol].isWhitePiece() != side) { continue; }
 
             //reset if piece has no valid moves
-            if(!setValidMoves(selectRow, selectCol)) { continue; }
-
+            if(!setValidMoves(selectRow, selectCol)) { continue; }            
+            
             //continue until finds a valid move
             while(!moved){                
 
@@ -1276,7 +1462,7 @@ public class ChessBoard {
                         boolean doMove2 = new Random().nextBoolean();
 
                         //25% chance for a valid move to be chosen
-                        if(doMove1 && doMove2){
+                        if((doMove1 && doMove2)){
 
                             //automatically promote pawn to queen
                             if(canPromote(selectRow, selectCol, row, side)){
@@ -1296,6 +1482,7 @@ public class ChessBoard {
                 }
             }
         }
+
     }
 
     private void computerLevelOne(boolean side){
@@ -1430,5 +1617,31 @@ public class ChessBoard {
         }
 
         setPosition(row, col, bestRow, bestCol);
+    }
+
+    public String toString(){
+
+        String rtn = "";
+
+        for(int row = 0; row < ARRAY_SIZE; row++){
+
+            String rowsString = "";
+
+            for(int col = 0; col < ARRAY_SIZE; col++){
+
+                if(pieces[row][col] == null){
+                    rowsString += "null, ";
+                }
+                else {
+                    rowsString += "" + pieces[row][col] + ", ";
+                }
+            }
+
+            //rtn += pieces[row].toString() + "\n";
+
+            rtn += rowsString + "\n";
+        }
+
+        return rtn;
     }
 }

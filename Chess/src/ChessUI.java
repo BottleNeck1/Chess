@@ -144,10 +144,10 @@ public class ChessUI extends JFrame implements ActionListener {
     private final String[] playComputerChoices = {"No", "Yes"};
 
     /** computer Level Choices Options */
-    private final String[] computerLevelChoices = {"0", "1"};
+    private final String[] computerLevelChoices = {"0", "1", "2", "3"};
 
     /** Watch Computer Turn by Turn Options */
-    private final String[] watchComputerChoices = {"No", "Yes"};
+    private final String[] watchComputerChoices = {"Yes", "no"};
 
     /** Computer Bot Level */
     private int computerLevel;
@@ -186,6 +186,7 @@ public class ChessUI extends JFrame implements ActionListener {
         canPlay = true;
         gameEnd = false;
         continueGame = false;
+        watchComputer = true;
 
         tabbedPane = new JTabbedPane();
 
@@ -199,7 +200,7 @@ public class ChessUI extends JFrame implements ActionListener {
         playButton = new JButton("Play");
         playButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
-                if(!watchComputer){ return; }
+                //if(!watchComputer){ return; }
 
                 continueGame = true; //Continue sim when user clicks the button
                 computerSide = isWhiteTurn;
@@ -319,6 +320,12 @@ public class ChessUI extends JFrame implements ActionListener {
                     case "1":
                         computerLevel = 1;
                         break;
+                    case "2":
+                        computerLevel = 2;
+                        break;
+                    case "3":
+                        computerLevel = 3;
+                        break;    
                     default:
                         break;
                 }
@@ -350,7 +357,9 @@ public class ChessUI extends JFrame implements ActionListener {
                     case "No":
                         watchComputer = false;
 
-                        chessPanel.remove(playButton);
+                        if(!(playComputer && playerSide == null)){
+                            chessPanel.remove(playButton);
+                        }
                         break;
                     default:
                         break;
@@ -610,7 +619,8 @@ public class ChessUI extends JFrame implements ActionListener {
         }
 
         //moves the piece in the piece 2D array is chessboard class
-        chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
+        //chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
+        chessBoard.setMove(selectPieceRow, selectPieceCol, row, col);
 
         processMove();
 
@@ -623,14 +633,15 @@ public class ChessUI extends JFrame implements ActionListener {
 
         if((Boolean)isWhiteTurn != computerSide && playerSide != null) { return; }
 
-        if(!playComputer || !canPlay || !continueGame) { return; }
+        if(!playComputer || !canPlay || (!continueGame && watchComputer)) { return; }
 
         try {
             chessBoard.computerMove(computerSide, computerLevel);
         } catch (IllegalArgumentException e) {
-            //TODO: add a popup
             isStaleMate = true;
             isStaleMate();
+            isStaleMate = false;
+            chessBoard.resetSimTurns();
         }
 
         // if(playerSide == null){
@@ -644,6 +655,7 @@ public class ChessUI extends JFrame implements ActionListener {
         }
 
         if(playerSide == null && !gameEnd){
+            computerSide = isWhiteTurn;
             computerMove();
         }
 
@@ -654,6 +666,8 @@ public class ChessUI extends JFrame implements ActionListener {
     }
 
     private void processMove(){
+
+        if(gameEnd) { return; }
 
         //Update board after moving
         updateBoard();
@@ -704,7 +718,12 @@ public class ChessUI extends JFrame implements ActionListener {
     }
 
     private void isStaleMate(){
+
+        
         if(chessBoard.isStaleMate(isWhiteTurn) || isStaleMate) {
+
+            //Reset simulated turns after game ends
+            chessBoard.resetSimTurns();
 
             //Show Dialog Box with Yes/No/Cancel option
             int choice = JOptionPane.showConfirmDialog(null, "Game Ends in Stalemate! Play Again? ");
@@ -754,6 +773,9 @@ public class ChessUI extends JFrame implements ActionListener {
     }
 
     private void gameWin (boolean side){
+
+        //Reset simulated turns after game ends
+        chessBoard.resetSimTurns();
 
         //Show Dialog Box with Yes/No/Cancel option
         int choice = JOptionPane.showConfirmDialog(null, String.format("%s Wins! Play Again? ", side ? "White" : "Black"));

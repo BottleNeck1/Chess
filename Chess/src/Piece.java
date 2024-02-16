@@ -53,6 +53,16 @@ public abstract class Piece {
         this.isFirstMove = true;
     }
 
+    public Piece(Piece other){
+        this.row = other.row;
+        this.col = other.col;
+        this.isWhitePiece = other.isWhitePiece;
+        this.isFirstMove = other.isFirstMove;
+        this.name = other.name;
+        this.whiteImgFile = other.whiteImgFile;
+        this.blackImgFile = other.blackImgFile;
+    }
+
     /** 
      * Accesor for Piece Name
      * @return Piece Name

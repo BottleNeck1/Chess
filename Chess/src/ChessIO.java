@@ -20,7 +20,7 @@ public class ChessIO {
         return moves;
     }
 
-    private String makeLines(String movesString){
+    // private String makeLines(String movesString){
 
-    }
+    // }
 }
