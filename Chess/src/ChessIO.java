@@ -1,26 +1,79 @@
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Scanner;
 
+/**
+ * Chess Input/Output File
+ * uses .pgn files
+ * @author David Martinez
+ */
 public class ChessIO {
     
+    /**
+     * Reads a .pgn file (Chess game format), and returns an array of chess moves as strings
+     * @param filename file to read
+     * @return ArrayList of chess moves
+     */
+    public static ArrayList<String> readChessPGN(String filename) {
 
-    public static ArrayList<String[]> readChessPGN(String filename){
+        int i = filename.lastIndexOf('.');
+        if (i > 0) {
+            if(!"pgn".equals(filename.substring(i + 1))){
+                throw new IllegalArgumentException("Incorrect file type");
+            }
+        }
 
-        ArrayList<String[]> moves = new ArrayList<>();
+        ArrayList<String> moves = new ArrayList<>();
+
+        Scanner file = null;
+        Scanner txtScanner = null;
+        Scanner moveScanner = null;
 
         try {
-            Scanner file = new Scanner(new FileInputStream(filename));
-            file.useDelimiter("1.");
-            file.next();            
+            file = new Scanner(new FileInputStream(filename));
+            file.useDelimiter("1. ");
+            file.next();
+            String fileTxt = "";
+
+            while (file.hasNextLine()) {
+                fileTxt += file.nextLine() + "\n";
+            }
+
+            String movesTxt = "";
+
+            txtScanner = new Scanner(fileTxt);
+            txtScanner.useDelimiter("\\d. |\\d\\d. |\\d\\d\\d. |\\d\\.\\.\\. |\\d\\d\\.\\.\\. |\\d\\d\\d\\.\\.\\. ");
+
+            while (txtScanner.hasNext()){
+                movesTxt += txtScanner.next();
+            }
+
+            movesTxt = movesTxt.replaceAll("\\{.*?\\}", "");
+
+            moveScanner = new Scanner(movesTxt);
+
+            while(moveScanner.hasNext()){
+                moves.add(moveScanner.next());
+            }
+
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException("Unable to read file: " + filename);
         } catch (Exception e) {
-            // TODO: handle exception
+            throw new IllegalArgumentException("error reading the file: " + filename);
+        } finally {
+            if(file != null)
+                file.close();
+            if(txtScanner != null)
+                txtScanner.close();
+            if(moveScanner != null)
+                moveScanner.close();
         }
+
+        System.out.println(moves);
 
         return moves;
     }
-
-    // private String makeLines(String movesString){
-
-    // }
 }

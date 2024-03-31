@@ -1,24 +1,12 @@
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.font.TextLayout;
+import java.util.ArrayList;
 
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
 /**
@@ -31,151 +19,142 @@ public class ChessUI extends JFrame implements ActionListener {
     /** Grid Board Size */
     private static final int GRID_SIZE = 8;
 
-    /** Window Size */
-    private static final int SIZE = 500;
+    /** Window Width Size */
+    private static final int WIDTH = 650;
+    /** Window Height */
+    private static final int HEIGHT = 500;
 
+    private static ChessUI ui;
+
+    /** Chess Panel for setting board */
     private JPanel chessPanel;
-
+    /** Side panel */
+    private JPanel sidePanel;
+    /** Moves Panel for switching board states */
+    private JPanel movesPanel;
+    /** Moves Grid */
+    private JPanel movesGrid;
+    /** Grid layout */
+    private GridLayout movesGL;
+    /** 2D array of buttons for moves */
+    private ArrayList<JButton[]> movesButtons;
+    /** Scroll Bar for moves */
+    private JScrollPane movesScroll;
+    /** Action Listener for side panel */
+    private ActionListener side;
     /** Grid Board JPanel */
     private JPanel board;
-
     /** Buttons 2D Array */
     private JButton[][] buttons;
-
+    /** play button */
     private JButton playButton;
-
     /** Chess Game Class Instance */
     private ChessBoard chessBoard;
-
     /** Game Starts with white side */
     private boolean isWhiteTurn;
-
     /** Boolean for is user locks a piece to move */
     private boolean pieceChosen;
-
     /** Can user play */
     private boolean canPlay;
-
     /** Stop Game From Playing */
     private boolean gameEnd;
-
     /** User selected piece to move row */
     private int selectPieceRow;
-
     /** User selected piece to move column */
     private int selectPieceCol;
-
     /** Row to Promote */
     private int promotionRow;
-
     /** Col to Promote */
     private int promotionCol;
-
     /** Player Side to Play on */
     private Boolean playerSide;
-
     /** Computer Side to Play on */
     private boolean computerSide;
-
     /** Play against Computer or not */
     private boolean playComputer;
-
+    /** bool for if want to watch the bot move by move */
     private boolean watchComputer;
-
+    /** bool for if should play the next move */
     private boolean continueGame;
-
+    /** bool for if the game is a stalemate */
     private boolean isStaleMate;
-
     /** Promotion Menu */
     private JPopupMenu promoteMenu;
-
     /** Pawn Promotion Option */
     private Piece b, q, r, n;
-
     /** Menu Items */
     private JMenuItem queenItem, rookItem, knightItem, bishopItem;
-
     /** GUI Tabs */
     private JTabbedPane tabbedPane;
-
     /** Press To Move to Chess Board */
     private JButton settingsPlayButton;
-
     /** Settings Tab */
-    private JPanel settingsPane;
-
+    private JPanel settingsPanel;
+    /** Player controls */
+    private JPanel controlsPanel;
+    /** input output panel */
+    private JPanel ioPanel;
     /** Player Side Choose Panel */
     private JPanel playerSidePanel;
-
     /** Player Side Choose Label */
     private JLabel playerSideLabel;
-
     /** Player Side Choose Combo Box */
     private JComboBox<String> playerSideBox;
-
     /** Play Computer Panel */
     private JPanel playComputerPanel;
-
     /** Play Computer Label */
     private JLabel playComputerLabel;
-
     /** Play Computer Choose Box */
     private JComboBox<String> playComputerBox;
-
     /** Computer Level Panel */
     private JPanel computerLevelPanel;
-
     /** Computer Level Label */
     private JLabel computerLevelLabel;
-
     /** Computer Level Choose Box */
     private JComboBox<String> computerLevelBox;
-
+    /** Panel for watch computer button */
     private JPanel watchComputerPanel;
-
+    /** label for the watch computer button */
     private JLabel watchComputerLabel;
-
+    /** drop down box for watch commputer button */
     private JComboBox<String> watchComputerBox;
-
     /** Player Side Choices Options */
     private final String[] playerSideChoices = {"White", "Black", "None"};
-
     /** Playing Computer Choices Options */
     private final String[] playComputerChoices = {"No", "Yes"};
-
     /** computer Level Choices Options */
     private final String[] computerLevelChoices = {"0", "1", "2", "3"};
-
     /** Watch Computer Turn by Turn Options */
     private final String[] watchComputerChoices = {"Yes", "no"};
-
+    /** Load Button */
+    private JButton loadButton;
+    /** Save Button */
+    private JButton saveButton;
+    /** New Game Button */
+    private JButton newButton;
     /** Computer Bot Level */
     private int computerLevel;
-
     /** RGB Value */
     private static final int RED_VALUE_1 = 225;
-
     /** RGB Value */
     private static final int GREEN_VALUE_1 = 183;
-
     /** RGB Value */
     private static final int BLUE_VALUE_1 = 99;
-
     /** RGB Value */
     private static final int RED_VALUE_2 = 58;
-
     /** RGB Value */
     private static final int GREEN_VALUE_2 = 48;
-
     /** RGB Value */
     private static final int BLUE_VALUE_2 = 27;
 
+
     /** ChessUI Contructor */
-    public ChessUI() {
+    private ChessUI() {
         super("Chess");
-        setSize(SIZE, SIZE);
+        setSize(WIDTH, HEIGHT);
         setLocation(100, 100);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        ui = this;
 
         //Default Values
         playerSide = true;
@@ -208,7 +187,10 @@ public class ChessUI extends JFrame implements ActionListener {
             }
         });
 
-        settingsPane = new JPanel(new FlowLayout());
+        settingsPanel = new JPanel(new BorderLayout());
+        controlsPanel = new JPanel(new FlowLayout());
+        ioPanel = new JPanel(new FlowLayout());
+
         settingsPlayButton = new JButton("Play");
         settingsPlayButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -371,22 +353,61 @@ public class ChessUI extends JFrame implements ActionListener {
 
         watchComputerBox.setEnabled(false);
 
+       
+
+        loadButton = new JButton("Load");
+        loadButton.addActionListener(new ActionListener() {
+            
+            public void actionPerformed(ActionEvent e) {
+                
+                System.out.println(fileChooseer(true));
+            }
+        });
+
+
+        saveButton = new JButton("Save");
+        saveButton.addActionListener(new ActionListener() {
+            
+            public void actionPerformed(ActionEvent e) {
+                fileChooseer(false);
+            }
+        });
+
+
+        newButton = new JButton("New ");
+        newButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                resetBoard();
+            }
+            
+        });
+
+        ioPanel.add(newButton);
+        ioPanel.add(loadButton);
+        ioPanel.add(saveButton);
+
+        settingsPanel.add(controlsPanel, BorderLayout.NORTH);
+        settingsPanel.add(ioPanel, BorderLayout.SOUTH);
+
         //Add Created Panels For Combo Box
-        settingsPane.add(playerSidePanel);
-        settingsPane.add(playComputerPanel);
-        settingsPane.add(computerLevelPanel);
-        settingsPane.add(watchComputerPanel);
-        settingsPane.add(settingsPlayButton);
+        controlsPanel.add(playerSidePanel);
+        controlsPanel.add(playComputerPanel);
+        controlsPanel.add(computerLevelPanel);
+        controlsPanel.add(watchComputerPanel);
+        controlsPanel.add(settingsPlayButton);
 
         //Add Component to tabs
         tabbedPane.add("Chess", (Component)chessPanel);
-        tabbedPane.add("Settings", (Component)settingsPane);
+        tabbedPane.add("Settings", (Component)settingsPanel);
 
-        settingsPane.setBackground(Color.LIGHT_GRAY);
+        controlsPanel.setBackground(Color.LIGHT_GRAY);
+        settingsPanel.setBackground(Color.LIGHT_GRAY);
+        ioPanel.setBackground(Color.LIGHT_GRAY);
         board.setBackground(Color.DARK_GRAY);
         add(tabbedPane); //add the primary JPanel
 
-        chessBoard = new ChessBoard(); //create instance of ChessBoard Class to handle game
+        chessBoard = ChessBoard.getInstance(); //create instance of ChessBoard Class to handle game
 
         
         boolean background = true; // used to color everyother button a different board color
@@ -425,6 +446,46 @@ public class ChessUI extends JFrame implements ActionListener {
 
         //Add board to Chess Panel after buttons are initialized
         chessPanel.add(board, BorderLayout.CENTER);
+
+        //Side panel
+        sidePanel = new JPanel(new BorderLayout());
+        //Moves List Panel
+        movesPanel = new JPanel(new BorderLayout());
+        movesGL = new GridLayout(1, 3);
+        movesGrid = new JPanel(movesGL);
+        movesPanel.add(movesGrid, BorderLayout.CENTER);
+
+
+        //movesGL.setRows(2);
+
+        movesButtons = new ArrayList<>();
+        movesButtons.add(new JButton[2]);
+        side = new SideActionPerformed(movesButtons);
+
+        //round label set
+        JLabel round = new JLabel(ChessBoard.getRound() + ": ");
+        round.setHorizontalAlignment(SwingConstants.RIGHT);
+        round.setPreferredSize(new Dimension(30, 30));
+        movesGrid.add(round);
+
+        //set inital side buttons
+        for(int j = 0; j < 2; j++){
+            movesButtons.get(0)[j] = new JButton();
+            movesButtons.get(0)[j].setPreferredSize(new Dimension(50, 30));
+            movesButtons.get(0)[j].addActionListener(side);
+            movesGrid.add(movesButtons.get(0)[j]);
+        }
+
+        movesScroll = new JScrollPane(movesGrid, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        movesScroll.getVerticalScrollBar().setUnitIncrement(15);
+        movesPanel.add(movesScroll);
+
+        //movesPanel.add(movesScroll, BorderLayout.EAST);
+
+        sidePanel.add(movesPanel, BorderLayout.EAST);
+        chessPanel.add(sidePanel, BorderLayout.EAST);
+
+        //incrementMovesGrid();
 
         //new pop up menu for promotion
         promoteMenu = new JPopupMenu();
@@ -477,6 +538,19 @@ public class ChessUI extends JFrame implements ActionListener {
         
     }
 
+    private String fileChooseer(boolean load){
+        JFileChooser fc = new JFileChooser("./");
+
+        if(load){
+            fc.showOpenDialog(this);
+        }
+        else {
+            fc.showSaveDialog(this);
+        }
+
+        return fc.getSelectedFile().getAbsolutePath();
+    }
+
     /**
      * Performs specific action(s) based on the event that occurs
      * 
@@ -485,7 +559,7 @@ public class ChessUI extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         if(!canPlay) { return; }
-        
+
         //Iterates 2D buttons array to find the index for the pressed button
         for(int row = 0; row < GRID_SIZE; row++){
 
@@ -530,6 +604,31 @@ public class ChessUI extends JFrame implements ActionListener {
                 }
             }
         }
+    }
+
+    public static ChessUI getUI(){
+        return ui;
+    }
+
+    private void incrementMovesGrid(){
+
+        movesGL.setRows(movesGL.getRows() + 1);
+
+        JLabel round = new JLabel(ChessBoard.getRound() + ": ");
+        round.setHorizontalAlignment(SwingConstants.RIGHT);
+        round.setPreferredSize(new Dimension(30, 30));
+        movesGrid.add(round);
+
+        movesButtons.add(new JButton[2]);
+        for(int j = 0; j < 2; j++){
+            movesButtons.get(ChessBoard.getRound() - 1)[j] = new JButton();
+            movesButtons.get(ChessBoard.getRound() - 1)[j].setPreferredSize(new Dimension(50, 30));
+            movesButtons.get(ChessBoard.getRound() - 1)[j].addActionListener(side);
+            movesGrid.add(movesButtons.get(ChessBoard.getRound() - 1)[j]);
+        }
+
+        if(movesButtons.size() < ChessBoard.getChessBoardListSize())
+            incrementMovesGrid();
     }
 
     private void markAvailable(int startRow, int startCol){
@@ -622,6 +721,11 @@ public class ChessUI extends JFrame implements ActionListener {
         //chessBoard.setPosition(selectPieceRow, selectPieceCol, row, col);
         chessBoard.setMove(selectPieceRow, selectPieceCol, row, col);
 
+//        for(ChessBoard[] cb : ChessBoard.getChessBoardList()){
+//            System.out.println(cb[0]);
+//            System.out.println(cb[1]);
+//        }
+
         processMove();
 
         if(gameEnd && canPlay){
@@ -684,6 +788,9 @@ public class ChessUI extends JFrame implements ActionListener {
         //make it the next players turn after they have moved a piece
         isWhiteTurn = !isWhiteTurn;
 
+        if(isWhiteTurn)
+            incrementMovesGrid();
+
         //If White king is in checkmate call for game to end with black winning
         if(chessBoard.isCheckMate(true)) {
             gameWin(false);
@@ -693,6 +800,13 @@ public class ChessUI extends JFrame implements ActionListener {
         if(chessBoard.isCheckMate(false)){
             gameWin(true);
         }
+    }
+
+    public void updateInstance(){
+        chessBoard = ChessBoard.getInstance();
+        this.isWhiteTurn = chessBoard.isWhiteTurn();
+        updateBoard();
+        unmark();
     }
 
     private void updateBoard() {
@@ -807,7 +921,7 @@ public class ChessUI extends JFrame implements ActionListener {
         gameEnd = false;
 
         //makes new chessboard instance
-        chessBoard = new ChessBoard();
+        ChessBoard.resetChessBoard();
 
         boolean background = true;
         for(int row = 0; row < GRID_SIZE; row++){
@@ -854,6 +968,13 @@ public class ChessUI extends JFrame implements ActionListener {
      * @param args array of command line arguments
      */
     public static void main(String[] args) {
+//        for(int i = 'a'; i <= 'h'; i++){
+//            System.out.println((char)i - 'a');
+//        }
+//
+//        System.out.println();
+//        System.out.println('h' - 'a') ;
+
         new ChessUI(); //calls the GUI on start
     }
 }

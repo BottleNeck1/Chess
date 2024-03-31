@@ -1,7 +1,7 @@
 import java.awt.Image;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Random;
-
 
 import java.util.ArrayList;
 
@@ -21,6 +21,10 @@ public class ChessBoard{
     /** 2D array of available moves */
     private boolean[][] validMoves = new boolean[ARRAY_SIZE][ARRAY_SIZE];
 
+    /** Singleton Instance */
+    private static ChessBoard instance;
+
+    /** ChessBot */
     private ChessBot chessBot;
 
     /** 7 Grid Position */
@@ -69,11 +73,17 @@ public class ChessBoard{
 
     private int simTurns;
 
-    /** ChessBoard Constructor */
-    public ChessBoard(){
+    private static ArrayList<ChessBoard[]> chessBoardList;
 
-        simTurns = 0;
-        isWhiteTurn = true;
+    private static ArrayList<String[]> movesList;
+
+    private static boolean hasChangedInstance;
+
+    /** Chess Round */
+    private static int chessRound;
+
+    /** ChessBoard Constructor */
+    private ChessBoard(){
 
         //sets inital board
         setBoard();
@@ -110,6 +120,12 @@ public class ChessBoard{
             }
         }
 
+        this.isBlackCheck = other.isBlackCheck;
+        this.isWhiteCheck = other.isWhiteCheck;
+        this.simTurns = other.simTurns;
+        this.validMoves = other.validMoves;
+        this.chessBot = other.chessBot;
+
         this.whiteRooks = new Rook[2];
         this.whiteRooks[0] = new Rook((Rook)other.whiteRooks[0]);
         this.whiteRooks[1] = new Rook((Rook)other.whiteRooks[1]);
@@ -124,12 +140,52 @@ public class ChessBoard{
         this.isWhiteTurn = other.isWhiteTurn;
     }
 
-    // public ChessBoard(ChessBoard chessBoard){
-    //     this.
-    // }
+    public static ChessBoard getInstance(){
+        if(instance == null){
+            instance = new ChessBoard();
+        }
+        return  instance;
+    }
+
+    public boolean isWhiteTurn(){
+        return instance.isWhiteTurn;
+    }
+
+//    private static void setInstance(ChessBoard other){
+//        instance = other;
+//    }
+
+    public static void setInstance(int row, int col){
+        if(chessRound == 1 && instance.isWhiteTurn) { return; }
+        if(row == chessRound - 1 && (instance.isWhiteTurn ? col == 1 : col == 0)) { return; }
+
+        ChessBoard board = null;
+        try {
+            board = chessBoardList.get(row)[col];
+        } catch(IndexOutOfBoundsException e) {
+            return;
+        }
+
+        if(board == null) { return; }
+        instance = new ChessBoard(board);
+        instance.isWhiteTurn = col % 2 != 0;
+        chessRound = row + (instance.isWhiteTurn ? 2 : 1);
+        hasChangedInstance = true;
+    }
+
+    public static void resetChessBoard(){
+        instance = new ChessBoard();
+    }
 
     /** Sets the chess board up for play */
     private void setBoard(){
+
+        chessRound = 1;
+        simTurns = 0;
+        isWhiteTurn = true;
+        movesList = new ArrayList<>();
+        chessBoardList = new ArrayList<>();
+        hasChangedInstance = false;
 
         //sets all values in validMoves to false
         for(int i = 0; i < ARRAY_SIZE; i++){
@@ -177,6 +233,18 @@ public class ChessBoard{
         //Sets Queens
         pieces[0][3] = new Queen(0, 3, false);
         pieces[SEVEN_POS][3] = new Queen(SEVEN_POS, 3, true);
+    }
+
+    public static int getRound(){
+        return chessRound;
+    }
+
+    public static void setRound(int round){
+        chessRound = round;
+    }
+
+    public static int getChessBoardListSize(){
+        return chessBoardList.size();
     }
 
     /**
@@ -252,7 +320,6 @@ public class ChessBoard{
      * Using the starting row and col, find all available moves
      * @param startRow selected piece row to check
      * @param startCol selected piece column to check
-     * @returns True if any valid move, otherwise return false
      * @throws IllegalArgumentException if row or col is out of bounds
      * @return true if at least one valid move, else false
      */
@@ -817,25 +884,10 @@ public class ChessBoard{
 
     public void setMove(int currentRow, int currentCol, int newRow, int newCol){
         setPosition(currentRow, currentCol, newRow, newCol);
-        isWhiteTurn = !isWhiteTurn;
     }
 
     public void setMove(Move move){
         setPosition(move.getStartRow(), move.getStartCol(), move.getEndRow(), move.getEndCol());
-        isWhiteTurn = !isWhiteTurn;
-    }
-
-    public void revertMove(Move move){
-        
-        Piece temp = pieces[move.getStartRow()][move.getStartCol()];
-        pieces[move.getStartRow()][move.getStartCol()] = pieces[move.getEndRow()][move.getEndCol()];
-        pieces[move.getEndRow()][move.getEndCol()] = temp;
-
-        isWhiteTurn = !isWhiteTurn;
-    }
-
-    public void setBoardState(Piece[][] pieces){
-        this.pieces = pieces;
     }
 
     public void setBoardState(ChessBoard chessBoard){
@@ -887,9 +939,9 @@ public class ChessBoard{
         }
 
         if(pieces[currentRow][currentCol] == null){
-            System.out.println(String.format("StartRow:%d\nStartCol:%d\nEndRow:%d\nEndCol:%d\nMoves:%d\n", 
-            currentRow, currentCol, newRow, newCol, chessBot.getMovesChecked()));
-            System.out.println(toString());
+            //System.out.println(String.format("StartRow:%d\nStartCol:%d\nEndRow:%d\nEndCol:%d\nMoves:%d\n",
+            //currentRow, currentCol, newRow, newCol, chessBot.getMovesChecked()));
+            //System.out.println(toString());
         }
 
         boolean isWhitePiece = pieces[currentRow][currentCol].isWhitePiece();
@@ -990,6 +1042,35 @@ public class ChessBoard{
         pieces[currentRow][currentCol].setPosition(newRow, fixCol);
         pieces[newRow][fixCol] = pieces[currentRow][currentCol];
         pieces[currentRow][currentCol] = null;
+
+        if(instance == this) {
+            if(hasChangedInstance){
+                hasChangedInstance = false;
+
+                if(instance.isWhiteTurn){
+                    while(chessRound <= chessBoardList.size()){
+                        chessBoardList.remove(chessBoardList.size() - 1);
+                    }
+                }
+                else {
+                    while(chessRound < chessBoardList.size()){
+                        chessBoardList.remove(chessBoardList.size() - 1);
+                    }
+                    chessBoardList.get(chessRound - 1)[1] = null;
+                }
+
+            }
+
+            if (instance.isWhiteTurn) {
+                chessBoardList.add(new ChessBoard[]{new ChessBoard(this), null});
+            } else {
+                chessBoardList.get(chessRound - 1)[1] = new ChessBoard(this);
+                chessRound++;
+            }
+        }
+
+        isWhiteTurn = !isWhiteTurn;
+
     }
 
     /**
@@ -1619,6 +1700,10 @@ public class ChessBoard{
         setPosition(row, col, bestRow, bestCol);
     }
 
+    /**
+     * Override Object toString
+     * @return chessboard represented as a string
+     */
     public String toString(){
 
         String rtn = "";
@@ -1643,5 +1728,116 @@ public class ChessBoard{
         }
 
         return rtn;
+    }
+
+    public void loadChessFromFile(String filename){
+        setBoard();
+
+        ArrayList<String> moves = ChessIO.readChessPGN(filename);
+
+        Iterator<String> iterator = moves.iterator();
+
+        boolean isWhite = true;
+        while(iterator.hasNext()){
+            String next = iterator.next();
+
+            if("1-0".equals(next) || "0-1".equals(next) || "1/2-1/2".equals(next)) {
+                continue;
+            }
+
+            setMove(findMove(next, isWhite));
+
+            isWhite = !isWhite;
+        }
+    }
+
+    private Move findMove(String move, boolean isWhite){
+
+        Move rtnMove = null;
+
+        if("0-0".equals(move)){
+            rtnMove = isWhite ? new Move(whiteKing.getRow(), whiteKing.getCol(), whiteKing.getRow(), SIX_POS) :
+                    new Move(blackKing.getRow(), blackKing.getCol(), blackKing.getRow(), SIX_POS);
+
+        }
+        else if("0-0-0".equals(move)){
+            rtnMove = isWhite ? new Move(whiteKing.getRow(), whiteKing.getCol(), whiteKing.getRow(), 2) :
+                    new Move(blackKing.getRow(), blackKing.getCol(), blackKing.getRow(), 2);
+        }
+
+        if(move.length() == 2){
+            if(!Character.isLetter(move.charAt(0)) || !Character.isDigit(move.charAt(1))){
+                throw new IllegalArgumentException("Error found when processing moves");
+            }
+
+            int moveCol = move.charAt(0) - 'a';
+            int moveRow = move.charAt(1);
+            if(moveCol < 0 || moveCol > SEVEN_POS || moveRow > SEVEN_POS){
+                throw new IllegalArgumentException("Error found when processing moves");
+            }
+
+            int pawnRow = -1;
+            if(isWhite){
+                for(int i = SEVEN_POS; i > 0; i--){
+                    if(pieces[i][moveCol] instanceof  Pawn){
+                        pawnRow = i;
+                        break;
+                    }
+                }
+            }
+            else {
+                for(int i = 0; i < SEVEN_POS; i++){
+                    if(pieces[i][moveCol] instanceof  Pawn){
+                        pawnRow = i;
+                        break;
+                    }
+                }
+            }
+
+            if(pawnRow == -1) { throw new IllegalArgumentException("Error found when processing moves"); }
+
+            rtnMove = new Move(pawnRow, moveCol, moveRow, moveCol);
+        }
+
+        if(rtnMove != null) { return rtnMove; }
+
+        if(isWhite){
+
+            if("0-0".equals(move)){
+
+            }
+            else if("0-0-0".equals(move)){
+
+            }
+            else if(move.length() == 2){
+                findPawnMove(move, isWhite);
+            }
+        }
+        else {
+            
+        }
+
+        if(rtnMove == null){
+            throw new IllegalArgumentException("Error found when processing moves");
+        }
+        
+        return rtnMove;
+    }
+
+    private Move findPawnMove(String move, boolean isWhite){
+        Move rtnMove = null;
+
+        if(isWhite){
+            
+        }
+        else {
+            
+        }
+
+        if(rtnMove == null){
+            throw new IllegalArgumentException("Error found when processing moves");
+        }
+        
+        return rtnMove;
     }
 }
