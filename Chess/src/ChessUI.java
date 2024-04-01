@@ -612,6 +612,10 @@ public class ChessUI extends JFrame implements ActionListener {
 
     private void incrementMovesGrid(){
 
+//        if(movesButtons.size() == ChessBoard.getChessBoardListSize()){
+//            return;
+//        }
+
         movesGL.setRows(movesGL.getRows() + 1);
 
         JLabel round = new JLabel(ChessBoard.getRound() + ": ");
@@ -621,14 +625,33 @@ public class ChessUI extends JFrame implements ActionListener {
 
         movesButtons.add(new JButton[2]);
         for(int j = 0; j < 2; j++){
-            movesButtons.get(ChessBoard.getRound() - 1)[j] = new JButton();
-            movesButtons.get(ChessBoard.getRound() - 1)[j].setPreferredSize(new Dimension(50, 30));
-            movesButtons.get(ChessBoard.getRound() - 1)[j].addActionListener(side);
-            movesGrid.add(movesButtons.get(ChessBoard.getRound() - 1)[j]);
+//            movesButtons.get(ChessBoard.getRound() - 1)[j] = new JButton();
+//            movesButtons.get(ChessBoard.getRound() - 1)[j].setPreferredSize(new Dimension(50, 30));
+//            movesButtons.get(ChessBoard.getRound() - 1)[j].addActionListener(side);
+            movesButtons.get(movesButtons.size() - 1)[j] = new JButton();
+            movesButtons.get(movesButtons.size() - 1)[j].setPreferredSize(new Dimension(50, 30));
+            movesButtons.get(movesButtons.size() - 1)[j].addActionListener(side);
+            movesGrid.add(movesButtons.get(movesButtons.size() - 1)[j]);
         }
 
         if(movesButtons.size() < ChessBoard.getChessBoardListSize())
             incrementMovesGrid();
+    }
+
+    private void decrementMovesGrid(){
+
+        if(movesButtons.size() == 1){
+            return;
+        }
+
+        movesGrid.remove(movesGrid.getComponentCount() - 1);
+        movesGrid.remove(movesGrid.getComponentCount() - 1);
+        movesGrid.remove(movesGrid.getComponentCount() - 1);
+        movesGL.setRows(movesGL.getRows() - 1);
+
+        movesButtons.remove(movesButtons.size() - 1);
+        if(movesButtons.size() > ChessBoard.getChessBoardListSize())
+            decrementMovesGrid();
     }
 
     private void markAvailable(int startRow, int startCol){
@@ -788,6 +811,9 @@ public class ChessUI extends JFrame implements ActionListener {
         //make it the next players turn after they have moved a piece
         isWhiteTurn = !isWhiteTurn;
 
+        if(movesButtons.size() > ChessBoard.getChessBoardListSize())
+            decrementMovesGrid();
+
         if(isWhiteTurn)
             incrementMovesGrid();
 
@@ -921,7 +947,8 @@ public class ChessUI extends JFrame implements ActionListener {
         gameEnd = false;
 
         //makes new chessboard instance
-        ChessBoard.resetChessBoard();
+        chessBoard = ChessBoard.resetChessBoard();
+        decrementMovesGrid();
 
         boolean background = true;
         for(int row = 0; row < GRID_SIZE; row++){

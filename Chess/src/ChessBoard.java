@@ -173,8 +173,9 @@ public class ChessBoard{
         hasChangedInstance = true;
     }
 
-    public static void resetChessBoard(){
+    public static ChessBoard resetChessBoard(){
         instance = new ChessBoard();
+        return instance;
     }
 
     /** Sets the chess board up for play */
@@ -1343,6 +1344,14 @@ public class ChessBoard{
             default:
             throw new IllegalArgumentException("Invalid promotion.");
         }
+
+        if(isWhiteTurn)
+            chessBoardList.get(chessRound - 2)[1] = new ChessBoard(this);
+        else
+            chessBoardList.get(chessRound - 1)[0] = new ChessBoard(this);
+
+
+        //chessBoardList.get(chessRound - 1)[isWhiteTurn ? 1 : 0] = new ChessBoard(this);
     }
     /**
      * Returns true is the move can be a possible castle and if it is
