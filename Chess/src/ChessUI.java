@@ -20,7 +20,7 @@ public class ChessUI extends JFrame implements ActionListener {
     private static final int GRID_SIZE = 8;
 
     /** Window Width Size */
-    private static final int WIDTH = 650;
+    private static final int WIDTH = 700;
     /** Window Height */
     private static final int HEIGHT = 500;
 
@@ -471,7 +471,7 @@ public class ChessUI extends JFrame implements ActionListener {
         //set inital side buttons
         for(int j = 0; j < 2; j++){
             movesButtons.get(0)[j] = new JButton();
-            movesButtons.get(0)[j].setPreferredSize(new Dimension(50, 30));
+            movesButtons.get(0)[j].setPreferredSize(new Dimension(75, 30));
             movesButtons.get(0)[j].addActionListener(side);
             movesGrid.add(movesButtons.get(0)[j]);
         }
@@ -629,7 +629,7 @@ public class ChessUI extends JFrame implements ActionListener {
 //            movesButtons.get(ChessBoard.getRound() - 1)[j].setPreferredSize(new Dimension(50, 30));
 //            movesButtons.get(ChessBoard.getRound() - 1)[j].addActionListener(side);
             movesButtons.get(movesButtons.size() - 1)[j] = new JButton();
-            movesButtons.get(movesButtons.size() - 1)[j].setPreferredSize(new Dimension(50, 30));
+            movesButtons.get(movesButtons.size() - 1)[j].setPreferredSize(new Dimension(75, 30));
             movesButtons.get(movesButtons.size() - 1)[j].addActionListener(side);
             movesGrid.add(movesButtons.get(movesButtons.size() - 1)[j]);
         }
@@ -653,6 +653,8 @@ public class ChessUI extends JFrame implements ActionListener {
         if(movesButtons.size() > ChessBoard.getChessBoardListSize())
             decrementMovesGrid();
     }
+
+
 
     private void markAvailable(int startRow, int startCol){
 
@@ -807,6 +809,11 @@ public class ChessUI extends JFrame implements ActionListener {
         
         //checks for stalemate
         isStaleMate();
+
+        int addIdx = isWhiteTurn ? 0 : 1;
+        int buttonIdx = ChessBoard.getRound() - (isWhiteTurn ? 1 : 2);
+
+        movesButtons.get(buttonIdx)[addIdx].setText(ChessBoard.getMoveString(buttonIdx, addIdx));
         
         //make it the next players turn after they have moved a piece
         isWhiteTurn = !isWhiteTurn;
@@ -999,8 +1006,8 @@ public class ChessUI extends JFrame implements ActionListener {
 //            System.out.println((char)i - 'a');
 //        }
 //
-//        System.out.println();
-//        System.out.println('h' - 'a') ;
+//        System.out.println("" + 'a');
+//        System.out.println((char)('a' + 1)) ;
 
         new ChessUI(); //calls the GUI on start
     }

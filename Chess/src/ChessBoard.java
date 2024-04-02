@@ -14,6 +14,10 @@ public class ChessBoard{
 
     /** Chess Board  Size */
     public static final int ARRAY_SIZE = 8;
+
+    private static final String KING_SIDE_CASTLE = "0-0";
+
+    private static final String QUEEN_SIDE_CASTLE = "0-0-0";
     
     /** 2D array of Chess pieces */
     private Piece[][] pieces = new Piece[ARRAY_SIZE][ARRAY_SIZE];
@@ -246,6 +250,10 @@ public class ChessBoard{
 
     public static int getChessBoardListSize(){
         return chessBoardList.size();
+    }
+
+    public static String getMoveString(int row, int col){
+        return  movesList.get(row)[col];
     }
 
     /**
@@ -939,14 +947,11 @@ public class ChessBoard{
             throw new IllegalArgumentException("Invalid new row or col");
         }
 
-        if(pieces[currentRow][currentCol] == null){
-            //System.out.println(String.format("StartRow:%d\nStartCol:%d\nEndRow:%d\nEndCol:%d\nMoves:%d\n",
-            //currentRow, currentCol, newRow, newCol, chessBot.getMovesChecked()));
-            //System.out.println(toString());
-        }
-
         boolean isWhitePiece = pieces[currentRow][currentCol].isWhitePiece();
         boolean castling = false;
+        boolean isEnPassant = false;
+
+        //TODO: create a isTaking so can check if check
 
         int fixCol = newCol;
 
@@ -1000,6 +1005,7 @@ public class ChessBoard{
                     continue;
                 }
 
+                //makes a pawn unable to en-passant after other side has moved
                 if(pieces[row][col] instanceof Pawn){
                     Pawn p = (Pawn)pieces[row][col];
                     if(p.getCanEnPassant()){
@@ -1020,6 +1026,7 @@ public class ChessBoard{
                     Pawn p2 = (Pawn)pieces[currentRow][newCol];
 
                     if(p2.getCanEnPassant()){
+                        isEnPassant = true;
                         pieces[currentRow][newCol] = null;
                     }
                 }
@@ -1031,6 +1038,9 @@ public class ChessBoard{
 
             pieces[currentRow][currentCol] = p;
         }
+
+        //TODO: call to make the move string
+        addMoveString(currentRow, currentCol, newRow, newCol, castling, isEnPassant);
 
         if(castling){
             return;
@@ -1072,6 +1082,49 @@ public class ChessBoard{
 
         isWhiteTurn = !isWhiteTurn;
 
+    }
+
+    private void addMoveString(int currentRow, int currentCol, int newRow, int newCol, boolean castling, boolean isEnPassant){
+        //TODO: complete implementation
+
+        //piece that is moving
+        Piece piece = pieces[currentRow][currentCol];
+        //where in array to add
+        int addIdx = isWhiteTurn ? 0 : 1;
+        //is the piece eliminating another
+        boolean isTaking = pieces[newRow][newCol] != null;
+
+        if(addIdx == 0){
+            movesList.add(new String[2]);
+        }
+
+        if(castling){
+            if(isMovingRight(currentCol, newCol))
+                movesList.get(chessRound - 1)[addIdx] = KING_SIDE_CASTLE;
+            else
+                movesList.get(chessRound - 1)[addIdx] = QUEEN_SIDE_CASTLE;
+
+            return;
+        }
+
+        if(isEnPassant){
+
+
+            return;
+        }
+
+        if(piece instanceof Pawn){
+            char c = (char) ('a' + currentCol);
+
+            if(isTaking){
+                char take = (char) ('a' + newCol);
+                movesList.get(chessRound - 1)[addIdx] = String.format("%cx%c%d",
+                        c, take, (ARRAY_SIZE - newRow));
+                return;
+            }
+
+            movesList.get(chessRound - 1)[addIdx] = "" + c + (ARRAY_SIZE - newRow);
+        }
     }
 
     /**
@@ -1764,12 +1817,12 @@ public class ChessBoard{
 
         Move rtnMove = null;
 
-        if("0-0".equals(move)){
+        if(KING_SIDE_CASTLE.equals(move)){
             rtnMove = isWhite ? new Move(whiteKing.getRow(), whiteKing.getCol(), whiteKing.getRow(), SIX_POS) :
                     new Move(blackKing.getRow(), blackKing.getCol(), blackKing.getRow(), SIX_POS);
 
         }
-        else if("0-0-0".equals(move)){
+        else if(QUEEN_SIDE_CASTLE.equals(move)){
             rtnMove = isWhite ? new Move(whiteKing.getRow(), whiteKing.getCol(), whiteKing.getRow(), 2) :
                     new Move(blackKing.getRow(), blackKing.getCol(), blackKing.getRow(), 2);
         }
