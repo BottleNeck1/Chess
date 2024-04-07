@@ -6,7 +6,7 @@
 public class Bishop extends Piece {
 
     /** Name for piece */
-    private static final String NAME = "Bishop";
+    private static final String NAME = "B";
 
     /** White Piece File Path */
     private static final String WHITE_IMG_PATH = "src/resources/WhiteBishop.png";

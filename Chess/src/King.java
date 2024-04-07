@@ -6,7 +6,7 @@
 public class King extends Piece {
 
     /** Name for piece */
-    private static final String NAME = "King";
+    private static final String NAME = "K";
 
     /** White Piece File Path */
     private static final String WHITE_IMG_PATH = "src/resources/WhiteKing.png";

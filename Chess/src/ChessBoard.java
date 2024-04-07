@@ -18,6 +18,8 @@ public class ChessBoard{
     private static final String KING_SIDE_CASTLE = "0-0";
 
     private static final String QUEEN_SIDE_CASTLE = "0-0-0";
+
+    private enum Ambiguous { USE_ROW, USE_COL };
     
     /** 2D array of Chess pieces */
     private Piece[][] pieces = new Piece[ARRAY_SIZE][ARRAY_SIZE];
@@ -62,6 +64,8 @@ public class ChessBoard{
     private boolean isBlackCheck;
 
     private boolean isWhiteTurn;
+
+    private boolean isReadingFile;
 
     /** White Rooks */
     private Rook[] whiteRooks;
@@ -188,6 +192,7 @@ public class ChessBoard{
         chessRound = 1;
         simTurns = 0;
         isWhiteTurn = true;
+        isReadingFile = false;
         movesList = new ArrayList<>();
         chessBoardList = new ArrayList<>();
         hasChangedInstance = false;
@@ -349,144 +354,148 @@ public class ChessBoard{
 
             for(int col = 0; col < ARRAY_SIZE; col++){
 
-                if(canMove(startRow, startCol, row, col, true)){//peice can move to [row][col]
-
-                    //finds if the piece to move is white or black
-                    boolean isWhitePiece = pieces[startRow][startCol].isWhitePiece();
-
-                    boolean doContinue = false;
-                    Piece temp;
-
-                    if(pieces[startRow][startCol] instanceof King){//Selected piece is king
-
-                        //temp stores info from pieces[row][col]
-                        temp = pieces[row][col];
-
-                        //moves the King to the selected spot
-                        pieces[row][col] = pieces[startRow][startCol];
-                        pieces[startRow][startCol] = null;
-
-                        if(isWhitePiece){//white side
-                            
-                            whiteKing.setPosition(row, col);
-
-                            if(isCheck(true)){//if when the kings moves and it is now in check
-                                doContinue = true; //it is invalid
-                            }
-                            whiteKing.setPosition(startRow, startCol);
-                        }
-                        else {//black side
-
-                            blackKing.setPosition(row, col);
-
-                            if(isCheck(false)){
-                                doContinue = true;
-                            }
-                            blackKing.setPosition(startRow, startCol);
-
-                        }
-
-                        //resets the kings position to original spot
-                        pieces[startRow][startCol] = pieces[row][col];
-                        pieces[row][col] = temp;
-
-                    }
-
-                    //If Moving a king and does should not continue, all checks are performed and (dont go to below checks)
-                    //and sets the valid move in the bool array and makes hasValidMove true
-                    if(pieces[startRow][startCol] instanceof King && !doContinue){
-                        validMoves[row][col] = true;
-                        hasValidMove = true;
-                        continue;
-                    }
-                    else if(doContinue){
-                        continue;
-                    }
-
-                    //when moving a white piece and white king is in check
-                    if(isWhitePiece && isWhiteCheck){
-
-                        //move the selected piece to the desired [row][col]
-                        //making the starting spot null and storing the piece at [row][col]
-                        temp = pieces[row][col];
-                        pieces[row][col] = pieces[startRow][startCol];
-                        pieces[startRow][startCol] = null;
-
-                        //check white side king for check
-                        if(isCheck(true)){
-                            doContinue = true;
-                        }
-
-                        //replace the moved pieces
-                        pieces[startRow][startCol] = pieces[row][col];
-                        pieces[row][col] = temp;
-                    }
-                    else if(!isWhitePiece && isBlackCheck){
-                        
-                        temp = pieces[row][col];
-                        pieces[row][col] = pieces[startRow][startCol];
-                        pieces[startRow][startCol] = null;
-
-                        //check black side king for check
-                        if(isCheck(false)){
-                            doContinue = true;
-                        }
-
-                        pieces[startRow][startCol] = pieces[row][col];
-                        pieces[row][col] = temp;
-                    }
-
-                    if(doContinue){
-                        continue;
-                    }
-
-                    //check movement when same king is not in check
-                    if((isWhitePiece && !isCheck(true)) ||
-                        (!isWhitePiece && !isCheck(false))) {
-
-                        temp = pieces[row][col];
-                        pieces[row][col] = pieces[startRow][startCol];
-                        pieces[startRow][startCol] = null;
-                        
-
-                        if(isWhitePiece){
-                            
-                            if(isCheck(true)){
-                                doContinue = true;
-                            }
-                        }
-                        else {
-
-                            if(isCheck(false)){
-                                doContinue = true;
-                            }
-                        }
-
-                        pieces[startRow][startCol] = pieces[row][col];
-                        pieces[row][col] = temp;
-                    }
-                    
-                    //if above are true dont add [row][col] to valid moves
-                    if(doContinue){
-                        continue;
-                    }
-
-                    //makes any piece unable to move to king positions
-                    if((row == whiteKing.getRow() && col == whiteKing.getCol()) || 
-                        (row == blackKing.getRow() && col == blackKing.getCol())){
-                        continue;
-                    }
-
-                    //makes [row][col] a valid move after checks
-                    validMoves[row][col] = true;
-
-                    //if at least one valid move if found set hasValidMove to true
+                if(isValidMove(startRow, startCol, row, col)){
                     hasValidMove = true;
+                    validMoves[row][col] = true;
                 }
             }
         }
 
         return hasValidMove;
+    }
+
+    private boolean isValidMove(int startRow, int startCol, int row, int col){
+        if(canMove(startRow, startCol, row, col, true)){//peice can move to [row][col]
+
+            //finds if the piece to move is white or black
+            boolean isWhitePiece = pieces[startRow][startCol].isWhitePiece();
+
+            boolean doContinue = false;
+            Piece temp;
+
+            if(pieces[startRow][startCol] instanceof King){//Selected piece is king
+
+                //temp stores info from pieces[row][col]
+                temp = pieces[row][col];
+
+                //moves the King to the selected spot
+                pieces[row][col] = pieces[startRow][startCol];
+                pieces[startRow][startCol] = null;
+
+                if(isWhitePiece){//white side
+
+                    whiteKing.setPosition(row, col);
+
+                    if(isCheck(true)){//if when the kings moves and it is now in check
+                        doContinue = true; //it is invalid
+                    }
+                    whiteKing.setPosition(startRow, startCol);
+                }
+                else {//black side
+
+                    blackKing.setPosition(row, col);
+
+                    if(isCheck(false)){
+                        doContinue = true;
+                    }
+                    blackKing.setPosition(startRow, startCol);
+
+                }
+
+                //resets the kings position to original spot
+                pieces[startRow][startCol] = pieces[row][col];
+                pieces[row][col] = temp;
+
+            }
+
+            //If Moving a king and does should not continue, all checks are performed and (dont go to below checks)
+            //and sets the valid move in the bool array and makes hasValidMove true
+            if(pieces[startRow][startCol] instanceof King && !doContinue){
+                validMoves[row][col] = true;
+                return true;
+            }
+            else if(doContinue){
+                return false;
+            }
+
+            //when moving a white piece and white king is in check
+            if(isWhitePiece && isWhiteCheck){
+
+                //move the selected piece to the desired [row][col]
+                //making the starting spot null and storing the piece at [row][col]
+                temp = pieces[row][col];
+                pieces[row][col] = pieces[startRow][startCol];
+                pieces[startRow][startCol] = null;
+
+                //check white side king for check
+                if(isCheck(true)){
+                    doContinue = true;
+                }
+
+                //replace the moved pieces
+                pieces[startRow][startCol] = pieces[row][col];
+                pieces[row][col] = temp;
+            }
+            else if(!isWhitePiece && isBlackCheck){
+
+                temp = pieces[row][col];
+                pieces[row][col] = pieces[startRow][startCol];
+                pieces[startRow][startCol] = null;
+
+                //check black side king for check
+                if(isCheck(false)){
+                    doContinue = true;
+                }
+
+                pieces[startRow][startCol] = pieces[row][col];
+                pieces[row][col] = temp;
+            }
+
+            if(doContinue){
+                return false;
+            }
+
+            //check movement when same king is not in check
+            if((isWhitePiece && !isCheck(true)) ||
+                    (!isWhitePiece && !isCheck(false))) {
+
+                temp = pieces[row][col];
+                pieces[row][col] = pieces[startRow][startCol];
+                pieces[startRow][startCol] = null;
+
+
+                if(isWhitePiece){
+
+                    if(isCheck(true)){
+                        doContinue = true;
+                    }
+                }
+                else {
+
+                    if(isCheck(false)){
+                        doContinue = true;
+                    }
+                }
+
+                pieces[startRow][startCol] = pieces[row][col];
+                pieces[row][col] = temp;
+            }
+
+            //if above are true dont add [row][col] to valid moves
+            if(doContinue){
+                return false;
+            }
+
+            //makes any piece unable to move to king positions
+            if((row == whiteKing.getRow() && col == whiteKing.getCol()) ||
+                    (row == blackKing.getRow() && col == blackKing.getCol())){
+                return false;
+            }
+
+            //if at least one valid move if found set hasValidMove to true
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -950,8 +959,7 @@ public class ChessBoard{
         boolean isWhitePiece = pieces[currentRow][currentCol].isWhitePiece();
         boolean castling = false;
         boolean isEnPassant = false;
-
-        //TODO: create a isTaking so can check if check
+        boolean isTaking = false;
 
         int fixCol = newCol;
 
@@ -1039,20 +1047,51 @@ public class ChessBoard{
             pieces[currentRow][currentCol] = p;
         }
 
-        //TODO: call to make the move string
-        addMoveString(currentRow, currentCol, newRow, newCol, castling, isEnPassant);
+
 
         if(castling){
+            addMoveString(currentRow, currentCol, newRow, newCol, true, false, false, null);
             return;
         }
 
         //make piece make their first move is havnt already
         pieces[currentRow][currentCol].setFirstMove(false);
 
+        Ambiguous ambiguous = null;
+        if(!isReadingFile && !(pieces[currentRow][currentCol] instanceof King) && !(pieces[currentRow][currentCol] instanceof Pawn)){
+            //TODO: find ambiguous
+
+            isCheck(isWhiteTurn);
+
+            for(int row = 0; row < ARRAY_SIZE; row++){
+                for(int col = 0; col < ARRAY_SIZE; col++){
+                    if(pieces[row][col] == null)
+                        continue;
+                    if(pieces[currentRow][currentCol].isWhitePiece() != pieces[row][col].isWhitePiece())
+                        continue;
+                    if(currentRow == row && currentCol == col)
+                        continue;
+                    if(pieces[currentRow][currentCol].getClass() != pieces[row][col].getClass())
+                        continue;
+
+                    if(isValidMove(row, col, newRow, newCol)){
+                        ambiguous = col == newCol ? Ambiguous.USE_COL : Ambiguous.USE_ROW;
+                        break;
+                    }
+                }
+                if(ambiguous != null)
+                    break;
+            }
+        }
+
         //move the selected piece to new space
+        isTaking = pieces[newRow][newCol] != null;
         pieces[currentRow][currentCol].setPosition(newRow, fixCol);
         pieces[newRow][fixCol] = pieces[currentRow][currentCol];
         pieces[currentRow][currentCol] = null;
+
+        //TODO: call to make the move string
+        addMoveString(currentRow, currentCol, newRow, newCol, false, isEnPassant, isTaking, ambiguous);
 
         if(instance == this) {
             if(hasChangedInstance){
@@ -1084,15 +1123,13 @@ public class ChessBoard{
 
     }
 
-    private void addMoveString(int currentRow, int currentCol, int newRow, int newCol, boolean castling, boolean isEnPassant){
+    private void addMoveString(int currentRow, int currentCol, int newRow, int newCol, boolean castling, boolean isEnPassant, boolean isTaking, Ambiguous ambiguous){
         //TODO: complete implementation
 
-        //piece that is moving
-        Piece piece = pieces[currentRow][currentCol];
+        //piece that is moving (already moved)
+        Piece piece = pieces[newRow][newCol];
         //where in array to add
         int addIdx = isWhiteTurn ? 0 : 1;
-        //is the piece eliminating another
-        boolean isTaking = pieces[newRow][newCol] != null;
 
         if(addIdx == 0){
             movesList.add(new String[2]);
@@ -1104,16 +1141,12 @@ public class ChessBoard{
             else
                 movesList.get(chessRound - 1)[addIdx] = QUEEN_SIDE_CASTLE;
 
-            return;
         }
+        else if(isEnPassant){
 
-        if(isEnPassant){
 
-
-            return;
         }
-
-        if(piece instanceof Pawn){
+        else if(piece instanceof Pawn){
             char c = (char) ('a' + currentCol);
 
             if(isTaking){
@@ -1125,6 +1158,34 @@ public class ChessBoard{
 
             movesList.get(chessRound - 1)[addIdx] = "" + c + (ARRAY_SIZE - newRow);
         }
+        else {
+            String move = piece.getName();
+
+            if(ambiguous != null){
+                char clarity;
+                if(ambiguous == Ambiguous.USE_ROW)
+                    clarity = (char) ('a' + currentCol);
+                else
+                    clarity = (char) (ARRAY_SIZE - currentRow);
+
+                move += clarity;
+            }
+
+            //TODO: fix same COL not working for ambiguous
+
+            if(isTaking)
+                move += "x";
+
+            move += ((char) ('a' + newCol));
+            move += (ARRAY_SIZE - newRow);
+            movesList.get(chessRound - 1)[addIdx] = move;
+        }
+
+
+        if(isCheck(isWhiteTurn))
+            movesList.get(chessRound - 1)[addIdx] += "+";
+        if(isCheckMate(isWhiteTurn))
+            movesList.get(chessRound - 1)[addIdx] += "#";
     }
 
     /**
@@ -1382,16 +1443,16 @@ public class ChessBoard{
         boolean isWhitePiece = pieces[row][col].isWhitePiece();
         
         switch(type) {
-            case "Queen":
+            case "Q":
             pieces[row][col] = new Queen(row, col, isWhitePiece);
             break;
-            case "Knight":
+            case "N":
             pieces[row][col] = new Knight(row, col, isWhitePiece);
             break;
-            case "Bishop":
+            case "B":
             pieces[row][col] = new Bishop(row, col, isWhitePiece);
             break;
-            case "Rook":
+            case "R":
             pieces[row][col] = new Rook(row, col, isWhitePiece);
             break;
             default:
@@ -1800,6 +1861,7 @@ public class ChessBoard{
         Iterator<String> iterator = moves.iterator();
 
         boolean isWhite = true;
+        isReadingFile = true;
         while(iterator.hasNext()){
             String next = iterator.next();
 
@@ -1811,6 +1873,7 @@ public class ChessBoard{
 
             isWhite = !isWhite;
         }
+        isReadingFile = false;
     }
 
     private Move findMove(String move, boolean isWhite){

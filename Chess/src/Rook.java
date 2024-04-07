@@ -6,7 +6,7 @@
 public class Rook extends Piece {
     
     /** Name for piece */
-    private static final String NAME = "Rook";
+    private static final String NAME = "R";
 
     /** White Piece File Path */
     private static final String WHITE_IMG_PATH = "src/resources/WhiteRook.png";

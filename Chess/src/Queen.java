@@ -6,7 +6,7 @@
 public class Queen extends Piece {
 
     /** Name for piece */
-    private static final String NAME = "Queen";
+    private static final String NAME = "Q";
 
     /** White Piece File Path */
     private static final String WHITE_IMG_PATH = "src/resources/WhiteQueen.png";

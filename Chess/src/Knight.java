@@ -6,7 +6,7 @@
 public class Knight extends Piece {
 
     /** Name for piece */
-    private static final String NAME = "Knight";
+    private static final String NAME = "N";
 
     /** White Piece File Path */
     private static final String WHITE_IMG_PATH = "src/resources/WhiteKnight.png";

@@ -6,7 +6,7 @@
 public class Pawn extends Piece {
 
     /** Name for piece */
-    private static final String NAME = "Pawn";
+    private static final String NAME = "P";
 
     /** White Piece File Path */
     private static final String WHITE_IMG_PATH = "src/resources/WhitePawn.png";
