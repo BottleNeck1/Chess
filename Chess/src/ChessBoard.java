@@ -1476,10 +1476,15 @@ public class ChessBoard{
             throw new IllegalArgumentException("Invalid promotion.");
         }
 
-        if(isWhiteTurn)
+        if(isWhiteTurn){
+            movesList.get(chessRound - 2)[1] += "=" + type;
             chessBoardList.get(chessRound - 2)[1] = new ChessBoard(this);
-        else
+        }
+        else{
+            movesList.get(chessRound - 1)[0] += "=" + type;
             chessBoardList.get(chessRound - 1)[0] = new ChessBoard(this);
+        }
+
 
 
         //chessBoardList.get(chessRound - 1)[isWhiteTurn ? 1 : 0] = new ChessBoard(this);

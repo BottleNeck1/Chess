@@ -957,6 +957,11 @@ public class ChessUI extends JFrame implements ActionListener {
 
         chessBoard.promote(p.getName(), promotionRow, promotionCol);
         buttons[promotionRow][promotionCol].setIcon(new ImageIcon(p.getImage()));
+
+        movesButtons.get(ChessBoard.getRound() - 2)[1].setText(ChessBoard.getMoveString(ChessBoard.getRound() - 2, 1));
+        movesButtons.get(ChessBoard.getRound() - 2)[1].setMargin(new Insets(0, 0, 0, 0));
+        movesButtons.get(ChessBoard.getRound() - 1)[0].setText(ChessBoard.getMoveString(ChessBoard.getRound() - 1, 0));
+        movesButtons.get(ChessBoard.getRound() - 1)[0].setMargin(new Insets(0, 0, 0, 0));
     }
 
     /** Resets Game */
