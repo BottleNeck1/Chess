@@ -1,12 +1,10 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.font.TextLayout;
 import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
 /**
@@ -360,7 +358,7 @@ public class ChessUI extends JFrame implements ActionListener {
             
             public void actionPerformed(ActionEvent e) {
                 
-                System.out.println(fileChooseer(true));
+                System.out.println(fileChooser(true));
             }
         });
 
@@ -369,7 +367,21 @@ public class ChessUI extends JFrame implements ActionListener {
         saveButton.addActionListener(new ActionListener() {
             
             public void actionPerformed(ActionEvent e) {
-                fileChooseer(false);
+                String filename = fileChooser(false);
+                if(filename == null)
+                    return; //TODO: add exception handle and popup
+
+                if(filename.contains(".pgn")){
+                    int idx = filename.indexOf(".pgn");
+                    if(!".pgn".equals(filename.substring(idx))){
+                        return; //TODO: add exception handle and popup
+                    }
+                }
+                else{
+                    filename += ".pgn";
+                }
+
+                ChessIO.saveChessPGN(filename, ChessBoard.getMovesList());
             }
         });
 
@@ -380,7 +392,6 @@ public class ChessUI extends JFrame implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 resetBoard();
             }
-            
         });
 
         ioPanel.add(newButton);
@@ -538,7 +549,7 @@ public class ChessUI extends JFrame implements ActionListener {
         
     }
 
-    private String fileChooseer(boolean load){
+    private String fileChooser(boolean load){
         JFileChooser fc = new JFileChooser("./");
 
         if(load){
@@ -547,6 +558,9 @@ public class ChessUI extends JFrame implements ActionListener {
         else {
             fc.showSaveDialog(this);
         }
+
+        if(fc.getSelectedFile() == null)
+            return null;
 
         return fc.getSelectedFile().getAbsolutePath();
     }
@@ -952,10 +966,14 @@ public class ChessUI extends JFrame implements ActionListener {
         pieceChosen = false;
         isWhiteTurn = true;
         gameEnd = false;
+        canPlay = true;
 
         //makes new chessboard instance
         chessBoard = ChessBoard.resetChessBoard();
         decrementMovesGrid();
+
+        movesButtons.get(0)[0].setText("");
+        movesButtons.get(0)[1].setText("");
 
         boolean background = true;
         for(int row = 0; row < GRID_SIZE; row++){

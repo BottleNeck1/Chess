@@ -1,5 +1,6 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -75,5 +76,31 @@ public class ChessIO {
         System.out.println(moves);
 
         return moves;
+    }
+    public static void saveChessPGN(String filename, ArrayList<String[]> moves){
+
+        try (PrintWriter print = new PrintWriter(filename)) {
+
+            print.print("[Event \"Name\"]\n[Site \"City, Region COUNTRY\"]\n[Date \"YYYY.MM.DD\"]\n[Round \"##\"]\n" +
+                "[White \"Player Name\"]\n[Black \"Player Name\"]\n[Result \"1/2-1/2\"]\n");
+
+            int round = 1;
+            String result = ChessBoard.STALEMATE; //default to stalemate
+
+            if(ChessBoard.WHITE_WIN.equals(moves.get(moves.size() - 1)[0]) || ChessBoard.BLACK_WIN.equals(moves.get(moves.size() - 1)[0])){
+                result = moves.get(moves.size() - 1)[0];
+            }
+            else if(ChessBoard.WHITE_WIN.equals(moves.get(moves.size() - 1)[1]) || ChessBoard.BLACK_WIN.equals(moves.get(moves.size() - 1)[1])){
+                result = moves.get(moves.size() - 1)[1];
+            }
+
+            print.println(String.format("[Result \"%s\"]\n", result));
+
+            for (String[] move : moves) {
+                print.println(String.format("%d. %s %s", round++, move[0], move[1] == null ? "" : move[1]));
+            }
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException("Cannot save file.");
+        }
     }
 }

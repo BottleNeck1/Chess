@@ -19,6 +19,12 @@ public class ChessBoard{
 
     private static final String QUEEN_SIDE_CASTLE = "0-0-0";
 
+    public static final String WHITE_WIN = "1-0";
+
+    public static final String BLACK_WIN = "0-1";
+
+    public static final String STALEMATE = "1/2-1/2";
+
     private enum Ambiguous { USE_ROW, USE_COL };
     
     /** 2D array of Chess pieces */
@@ -259,6 +265,10 @@ public class ChessBoard{
 
     public static String getMoveString(int row, int col){
         return  movesList.get(row)[col];
+    }
+
+    public static ArrayList<String[]> getMovesList(){
+        return movesList;
     }
 
     /**
@@ -1075,7 +1085,7 @@ public class ChessBoard{
                         continue;
 
                     if(isValidMove(row, col, newRow, newCol)){
-                        ambiguous = col == newCol ? Ambiguous.USE_COL : Ambiguous.USE_ROW;
+                        ambiguous = col == currentCol ? Ambiguous.USE_ROW : Ambiguous.USE_COL;
                         break;
                     }
                 }
@@ -1162,13 +1172,13 @@ public class ChessBoard{
             String move = piece.getName();
 
             if(ambiguous != null){
-                char clarity;
-                if(ambiguous == Ambiguous.USE_ROW)
-                    clarity = (char) ('a' + currentCol);
+                //char clarity;
+                if(ambiguous == Ambiguous.USE_COL)
+                    move += (char) ('a' + currentCol);
                 else
-                    clarity = (char) (ARRAY_SIZE - currentRow);
+                    move += (ARRAY_SIZE - currentRow);
 
-                move += clarity;
+                //move += clarity;
             }
 
             //TODO: fix same COL not working for ambiguous
@@ -1181,11 +1191,18 @@ public class ChessBoard{
             movesList.get(chessRound - 1)[addIdx] = move;
         }
 
-
-        if(isCheck(isWhiteTurn))
-            movesList.get(chessRound - 1)[addIdx] += "+";
-        if(isCheckMate(isWhiteTurn))
+        if(isCheckMate(!isWhiteTurn)) {
             movesList.get(chessRound - 1)[addIdx] += "#";
+            if(addIdx == 0){
+                movesList.get(chessRound - 1)[1] = isWhiteTurn ? WHITE_WIN : BLACK_WIN;
+            }
+            else{
+                movesList.add(new String[2]);
+                movesList.get(chessRound)[0] = isWhiteTurn ? WHITE_WIN : BLACK_WIN;
+            }
+        }
+        else if(isCheck(!isWhiteTurn))
+            movesList.get(chessRound - 1)[addIdx] += "+";
     }
 
     /**
