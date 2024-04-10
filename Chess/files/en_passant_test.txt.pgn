@@ -1,0 +1,14 @@
+[Event "Name"]
+[Site "City, Region COUNTRY"]
+[Date "YYYY.MM.DD"]
+[Round "##"]
+[White "Player Name"]
+[Black "Player Name"]
+[Result "1/2-1/2"]
+[Result "1/2-1/2"]
+
+1. e4 h6
+2. e5 d5
+3. exd6 h5
+4. dxc7 h4
+5. g4 hxg3

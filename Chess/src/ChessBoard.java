@@ -1057,51 +1057,47 @@ public class ChessBoard{
             pieces[currentRow][currentCol] = p;
         }
 
-
-
-        if(castling){
-            addMoveString(currentRow, currentCol, newRow, newCol, true, false, false, null);
-            return;
-        }
-
-        //make piece make their first move is havnt already
-        pieces[currentRow][currentCol].setFirstMove(false);
-
         Ambiguous ambiguous = null;
-        if(!isReadingFile && !(pieces[currentRow][currentCol] instanceof King) && !(pieces[currentRow][currentCol] instanceof Pawn)){
-            //TODO: find ambiguous
+        if(!castling){
+            //make piece make their first move is havnt already
+            pieces[currentRow][currentCol].setFirstMove(false);
 
-            isCheck(isWhiteTurn);
+            if(!isReadingFile && !(pieces[currentRow][currentCol] instanceof King) && !(pieces[currentRow][currentCol] instanceof Pawn)){
+                //TODO: find ambiguous
 
-            for(int row = 0; row < ARRAY_SIZE; row++){
-                for(int col = 0; col < ARRAY_SIZE; col++){
-                    if(pieces[row][col] == null)
-                        continue;
-                    if(pieces[currentRow][currentCol].isWhitePiece() != pieces[row][col].isWhitePiece())
-                        continue;
-                    if(currentRow == row && currentCol == col)
-                        continue;
-                    if(pieces[currentRow][currentCol].getClass() != pieces[row][col].getClass())
-                        continue;
+                isCheck(isWhiteTurn);
 
-                    if(isValidMove(row, col, newRow, newCol)){
-                        ambiguous = col == currentCol ? Ambiguous.USE_ROW : Ambiguous.USE_COL;
-                        break;
+                for(int row = 0; row < ARRAY_SIZE; row++){
+                    for(int col = 0; col < ARRAY_SIZE; col++){
+                        if(pieces[row][col] == null)
+                            continue;
+                        if(pieces[currentRow][currentCol].isWhitePiece() != pieces[row][col].isWhitePiece())
+                            continue;
+                        if(currentRow == row && currentCol == col)
+                            continue;
+                        if(pieces[currentRow][currentCol].getClass() != pieces[row][col].getClass())
+                            continue;
+
+                        if(isValidMove(row, col, newRow, newCol)){
+                            ambiguous = col == currentCol ? Ambiguous.USE_ROW : Ambiguous.USE_COL;
+                            break;
+                        }
                     }
+                    if(ambiguous != null)
+                        break;
                 }
-                if(ambiguous != null)
-                    break;
             }
-        }
 
-        //move the selected piece to new space
-        isTaking = pieces[newRow][newCol] != null;
-        pieces[currentRow][currentCol].setPosition(newRow, fixCol);
-        pieces[newRow][fixCol] = pieces[currentRow][currentCol];
-        pieces[currentRow][currentCol] = null;
+            //move the selected piece to new space
+            isTaking = pieces[newRow][newCol] != null;
+            pieces[currentRow][currentCol].setPosition(newRow, fixCol);
+            pieces[newRow][fixCol] = pieces[currentRow][currentCol];
+            pieces[currentRow][currentCol] = null;
+
+        }
 
         //TODO: call to make the move string
-        addMoveString(currentRow, currentCol, newRow, newCol, false, isEnPassant, isTaking, ambiguous);
+        addMoveString(currentRow, currentCol, newRow, newCol, castling, isEnPassant, isTaking, ambiguous);
 
         if(instance == this) {
             if(hasChangedInstance){
@@ -1153,7 +1149,7 @@ public class ChessBoard{
 
         }
         else if(isEnPassant){
-
+            movesList.get(chessRound - 1)[addIdx] = String.format("%cx%c%d", (char) ('a' + currentCol), (char) ('a' + newCol), (ARRAY_SIZE - newRow));
 
         }
         else if(piece instanceof Pawn){

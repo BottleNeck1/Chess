@@ -1,0 +1,23 @@
+[Event "Name"]
+[Site "City, Region COUNTRY"]
+[Date "YYYY.MM.DD"]
+[Round "##"]
+[White "Player Name"]
+[Black "Player Name"]
+[Result "1/2-1/2"]
+[Result "1-0"]
+
+1. e4 d5
+2. Bc4 Bg4
+3. Nf3 Qd6
+4. 0-0 Nc6
+5. Nd4 0-0-0
+6. Nxc6 Bh3
+7. Nxe7+ Qxe7
+8. Bxd5 Qxe4
+9. Bxe4 Bf5
+10. Qg4 Be6
+11. Qxe6+ Rd7
+12. Qe8+ Rd8
+13. Bf5+ Kb8
+14. Qxd8# 1-0
