@@ -23,7 +23,7 @@ public class ChessIO {
         int i = filename.lastIndexOf('.');
         if (i > 0) {
             if(!"pgn".equals(filename.substring(i + 1))){
-                throw new IllegalArgumentException("Incorrect file type");
+                throw new IllegalArgumentException("Incorrect file type.");
             }
         }
 

@@ -525,6 +525,22 @@ public class ChessBoard{
         }
     }
 
+    private ArrayList<Piece> getPiecesThatCanMoveTo(Piece piece, int endRow, int endCol){
+        ArrayList<Piece> rtn = new ArrayList<>();
+
+        for(Piece[] p : pieces){
+            for(Piece type : p){
+                if(type == null || piece.isWhitePiece() != type.isWhitePiece()){
+                    continue;
+                }
+                if(piece.getClass() == type.getClass() && isValidMove(type.getRow(), type.getCol(), endRow, endCol)){
+                    rtn.add(type);
+                }
+            }
+        }
+        return rtn;
+    }
+
     /**
      * Calls canMove method for an object in Piece array
      * @param currentRow current row
@@ -1130,7 +1146,10 @@ public class ChessBoard{
     }
 
     private void addMoveString(int currentRow, int currentCol, int newRow, int newCol, boolean castling, boolean isEnPassant, boolean isTaking, Ambiguous ambiguous){
-        //TODO: complete implementation
+
+        if(isReadingFile){
+            return;
+        }
 
         //piece that is moving (already moved)
         Piece piece = pieces[newRow][newCol];
@@ -1878,16 +1897,68 @@ public class ChessBoard{
 
         Iterator<String> iterator = moves.iterator();
 
+        boolean hasResult = false;
+        String last = moves.get(moves.size() - 1);
+        if(WHITE_WIN.equals(last) || BLACK_WIN.equals(last) || STALEMATE.equals(last)) {
+            hasResult = true;
+        }
+
         boolean isWhite = true;
         isReadingFile = true;
         while(iterator.hasNext()){
             String next = iterator.next();
 
-            if("1-0".equals(next) || "0-1".equals(next) || "1/2-1/2".equals(next)) {
-                continue;
+            if(WHITE_WIN.equals(next) || BLACK_WIN.equals(next) || STALEMATE.equals(next)) {
+                throw new IllegalArgumentException("The move " + next + " is invalid");
             }
 
+            String promotion = null;
+            if(next.contains("=")){
+                if(next.indexOf("=") == next.length() - 1){
+                    throw new IllegalArgumentException("The move " + next + " is invalid");
+                }
+
+                promotion = Character.toString(next.charAt(next.length() - 1));
+                if(!"Q".equals(promotion) && !"B".equals(promotion) && !"N".equals(promotion) && !"R".equals(promotion)){
+                    throw new IllegalArgumentException("The move " + next + " is invalid");
+                }
+                next = next.substring(0, next.indexOf("="));
+            }
+
+            if(next.contains("+")){
+                if(next.indexOf("+") != next.length() - 1 || next.contains("#")){
+                    throw new IllegalArgumentException("The move " + next + " is invalid");
+                }
+                next = next.substring(0, next.indexOf("+"));
+            }
+
+            if(next.contains("#")){
+                if(next.indexOf("#") != next.length() - 1){
+                    throw new IllegalArgumentException("The move " + next + " is invalid");
+                }
+                if(iterator.hasNext()){
+                    throw new IllegalArgumentException("The move " + iterator.next() + " is invalid");
+                }
+                next = next.substring(0, next.indexOf("#"));
+            }
+
+
             setMove(findMove(next, isWhite));
+
+            if(isWhite){
+                int idx = movesList.size();
+                movesList.add(new String[2]);
+                movesList.get(idx)[0] = next;
+
+                chessBoardList.add(new ChessBoard[2]);
+                chessBoardList.get(idx)[0] = new ChessBoard(this);
+            }
+            else {
+                int idx = movesList.size() - 1;
+                movesList.get(idx)[1] = next;
+
+                chessBoardList.get(idx)[1] = new ChessBoard(this);
+            }
 
             isWhite = !isWhite;
         }
@@ -1899,24 +1970,31 @@ public class ChessBoard{
         Move rtnMove = null;
 
         if(KING_SIDE_CASTLE.equals(move)){
+            if(!canCastle(isWhite, isWhite ? SEVEN_POS : 0, 6)){
+                throw new IllegalArgumentException("The move " + move + " is invalid");
+            }
             rtnMove = isWhite ? new Move(whiteKing.getRow(), whiteKing.getCol(), whiteKing.getRow(), SIX_POS) :
                     new Move(blackKing.getRow(), blackKing.getCol(), blackKing.getRow(), SIX_POS);
-
+            return rtnMove;
         }
-        else if(QUEEN_SIDE_CASTLE.equals(move)){
+        if(QUEEN_SIDE_CASTLE.equals(move)){
+            if(!canCastle(isWhite, isWhite ? SEVEN_POS : 0, 2)){
+                throw new IllegalArgumentException("The move " + move + " is invalid");
+            }
             rtnMove = isWhite ? new Move(whiteKing.getRow(), whiteKing.getCol(), whiteKing.getRow(), 2) :
                     new Move(blackKing.getRow(), blackKing.getCol(), blackKing.getRow(), 2);
+            return  rtnMove;
         }
 
         if(move.length() == 2){
             if(!Character.isLetter(move.charAt(0)) || !Character.isDigit(move.charAt(1))){
-                throw new IllegalArgumentException("Error found when processing moves");
+                throw new IllegalArgumentException("The move " + move + " is invalid");
             }
 
             int moveCol = move.charAt(0) - 'a';
-            int moveRow = move.charAt(1);
+            int moveRow = ARRAY_SIZE - (move.charAt(1) - '0');
             if(moveCol < 0 || moveCol > SEVEN_POS || moveRow > SEVEN_POS){
-                throw new IllegalArgumentException("Error found when processing moves");
+                throw new IllegalArgumentException("The move " + move + " is invalid");
             }
 
             int pawnRow = -1;
@@ -1937,31 +2015,117 @@ public class ChessBoard{
                 }
             }
 
-            if(pawnRow == -1) { throw new IllegalArgumentException("Error found when processing moves"); }
+            if(pawnRow == -1 || !isValidMove(pawnRow, moveCol, moveRow, moveCol)) {
+                throw new IllegalArgumentException("The move " + move + " is invalid");
+            }
 
             rtnMove = new Move(pawnRow, moveCol, moveRow, moveCol);
+            return rtnMove;
         }
 
-        if(rtnMove != null) { return rtnMove; }
-
-        if(isWhite){
-
-            if("0-0".equals(move)){
-
-            }
-            else if("0-0-0".equals(move)){
-
-            }
-            else if(move.length() == 2){
-                findPawnMove(move, isWhite);
-            }
+        char first = move.charAt(0);
+        Piece p = null;
+        boolean pawnMove = false;
+        switch(first) {
+            case 'K':
+                p = new King(0, 0, isWhite);
+                break;
+            case 'Q':
+                p = new Queen(0, 0, isWhite);
+                break;
+            case 'B':
+                p = new Bishop(0, 0, isWhite);
+                break;
+            case 'N':
+                p = new Knight(0, 0, isWhite);
+                break;
+            case 'R':
+                p = new Rook(0, 0, isWhite);
+                break;
+            default:
+                if(first == 'a' || first == 'b' || first == 'c' || first == 'd' || first == 'e' || first == 'f' || first == 'g' || first == 'h'){
+                    pawnMove = true;
+                    p = new Pawn(0, 0, isWhite);
+                }
+                else {
+                    throw new IllegalArgumentException("The move " + move + " is invalid");
+                }
+                break;
         }
-        else {
-            
+
+        if(move.length() == 3){
+
+            int moveCol = move.charAt(1) - 'a';
+            int moveRow = ARRAY_SIZE - (move.charAt(2) - '0');
+            if(moveCol < 0 || moveCol > SEVEN_POS || moveRow > SEVEN_POS){
+                throw new IllegalArgumentException("The move " + move + " is invalid");
+            }
+
+            ArrayList<Piece> possible = getPiecesThatCanMoveTo(p, moveRow, moveCol);
+            if(possible.size() != 1){
+                throw new IllegalArgumentException("The move " + move + " is ambiguous");
+            }
+            return new Move(possible.get(0).getRow(), possible.get(0).getCol(), moveRow, moveCol);
+        }
+
+        if(move.length() == 4){
+            int moveCol = move.charAt(2) - 'a';
+            int moveRow = ARRAY_SIZE - (move.charAt(3) - '0');
+            if(moveCol < 0 || moveCol > SEVEN_POS || moveRow > SEVEN_POS){
+                throw new IllegalArgumentException("The move " + move + " is invalid");
+            }
+
+            ArrayList<Piece> possible = getPiecesThatCanMoveTo(p, moveRow, moveCol);
+            if(possible.isEmpty()){
+                throw new IllegalArgumentException("The move " + move + " is invalid");
+            }
+
+            if(move.contains("x")){
+                if(move.indexOf("x") != 1 || pieces[moveRow][moveCol] == null){
+                    throw new IllegalArgumentException("The move " + move + " is invalid");
+                }
+                if(possible.size() != 1){
+                    if(!(p instanceof Pawn)){
+                        throw new IllegalArgumentException("The move " + move + " is ambiguous");
+                    }
+                    int pawnRow = -1;
+                    if(isWhite){
+                        for(int i = SEVEN_POS; i > 0; i--){
+                            if(pieces[i][move.charAt(1) - 'a'] instanceof  Pawn){
+                                pawnRow = i;
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        for(int i = 0; i < SEVEN_POS; i++){
+                            if(pieces[i][ARRAY_SIZE - (move.charAt(1) - '0')] instanceof  Pawn){
+                                pawnRow = i;
+                                break;
+                            }
+                        }
+                    }//TODO : complete
+                }
+
+                return new Move(possible.get(0).getRow(), possible.get(0).getCol(), moveRow, moveCol);
+            }
+
+            if(possible.size() == 1){
+                throw new IllegalArgumentException("The move " + move + " is ambiguous");
+            }
+
+            char ambiguous = move.charAt(0);
+            if(Character.isLetter(ambiguous)){
+                if(ambiguous != 'a' && ambiguous != 'b' && ambiguous != 'c' && ambiguous != 'd' &&
+                    ambiguous != 'e' && ambiguous != 'f' && ambiguous != 'g' && ambiguous != 'h'){
+                    throw new IllegalArgumentException("The move " + move + " is invalid");
+                }
+            }
+
         }
 
         if(rtnMove == null){
-            throw new IllegalArgumentException("Error found when processing moves");
+            throw new IllegalArgumentException("The move " + move + " is invalid");
         }
         
         return rtnMove;
@@ -1978,7 +2142,7 @@ public class ChessBoard{
         }
 
         if(rtnMove == null){
-            throw new IllegalArgumentException("Error found when processing moves");
+            throw new IllegalArgumentException("The move " + move + " is invalid");
         }
         
         return rtnMove;

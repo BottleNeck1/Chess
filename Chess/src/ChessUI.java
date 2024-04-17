@@ -355,10 +355,19 @@ public class ChessUI extends JFrame implements ActionListener {
 
         loadButton = new JButton("Load");
         loadButton.addActionListener(new ActionListener() {
-            
+
             public void actionPerformed(ActionEvent e) {
-                
-                System.out.println(fileChooser(true));
+                try {
+                    String filename = fileChooser(true);
+                    if(filename == null)
+                        throw new IllegalArgumentException("File not found.");
+
+                    chessBoard.loadChessFromFile(filename);
+                    updateInstance();
+                } catch (IllegalArgumentException exp){
+                    JOptionPane.showMessageDialog(ui, exp.getMessage());
+                }
+
             }
         });
 
@@ -367,21 +376,26 @@ public class ChessUI extends JFrame implements ActionListener {
         saveButton.addActionListener(new ActionListener() {
             
             public void actionPerformed(ActionEvent e) {
+                try {
                 String filename = fileChooser(false);
                 if(filename == null)
-                    return; //TODO: add exception handle and popup
+                    throw new IllegalArgumentException("File not found.");
 
                 if(filename.contains(".pgn")){
                     int idx = filename.indexOf(".pgn");
                     if(!".pgn".equals(filename.substring(idx))){
-                        return; //TODO: add exception handle and popup
+                        throw new IllegalArgumentException("Incorrect file type.");
                     }
                 }
                 else{
                     filename += ".pgn";
                 }
 
-                ChessIO.saveChessPGN(filename, ChessBoard.getMovesList());
+
+                    ChessIO.saveChessPGN(filename, ChessBoard.getMovesList());
+                } catch (IllegalArgumentException exp){
+                    JOptionPane.showMessageDialog(ui, exp.getMessage());
+                }
             }
         });
 
@@ -1025,13 +1039,6 @@ public class ChessUI extends JFrame implements ActionListener {
      * @param args array of command line arguments
      */
     public static void main(String[] args) {
-//        for(int i = 'a'; i <= 'h'; i++){
-//            System.out.println((char)i - 'a');
-//        }
-//
-//        System.out.println("" + 'a');
-//        System.out.println((char)('a' + 1)) ;
-
         new ChessUI(); //calls the GUI on start
     }
 }
