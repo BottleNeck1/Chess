@@ -46,13 +46,13 @@ public class ChessIO {
             String movesTxt = "";
 
             txtScanner = new Scanner(fileTxt);
-            txtScanner.useDelimiter("\\d. |\\d\\d. |\\d\\d\\d. |\\d\\.\\.\\. |\\d\\d\\.\\.\\. |\\d\\d\\d\\.\\.\\. ");
+            txtScanner.useDelimiter("\\d\\. |\\d\\d\\. |\\d\\d\\d\\. |\\d\\.\\.\\. |\\d\\d\\.\\.\\. |\\d\\d\\d\\.\\.\\. ");
 
             while (txtScanner.hasNext()){
                 movesTxt += txtScanner.next();
             }
 
-            movesTxt = movesTxt.replaceAll("\\{.*?\\}", "");
+            movesTxt = movesTxt.replaceAll("\\{.*?}", "");
 
             moveScanner = new Scanner(movesTxt);
 

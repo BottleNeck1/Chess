@@ -76,6 +76,8 @@ public class ChessUI extends JFrame implements ActionListener {
     private boolean continueGame;
     /** bool for if the game is a stalemate */
     private boolean isStaleMate;
+
+    private boolean promote;
     /** Promotion Menu */
     private JPopupMenu promoteMenu;
     /** Pawn Promotion Option */
@@ -362,9 +364,21 @@ public class ChessUI extends JFrame implements ActionListener {
                     if(filename == null)
                         throw new IllegalArgumentException("File not found.");
 
+                    resetBoard();
                     chessBoard.loadChessFromFile(filename);
                     updateInstance();
+
+                    decrementMovesGrid();
+                    incrementMovesGrid();
+
+                    for(int i = 0; i < ChessBoard.getMovesList().size(); i++){
+                        movesButtons.get(i)[0].setText(ChessBoard.getMovesList().get(i)[0]);
+                        if(ChessBoard.getMovesList().get(i)[1] != null){
+                            movesButtons.get(i)[1].setText(ChessBoard.getMovesList().get(i)[1]);
+                        }
+                    }
                 } catch (IllegalArgumentException exp){
+                    resetBoard();
                     JOptionPane.showMessageDialog(ui, exp.getMessage());
                 }
 
@@ -514,6 +528,7 @@ public class ChessUI extends JFrame implements ActionListener {
 
         //new pop up menu for promotion
         promoteMenu = new JPopupMenu();
+        promote = false;
 
         q = new Queen(0, 0, isWhiteTurn);
         r = new Rook(0, 0, isWhiteTurn);
@@ -646,12 +661,13 @@ public class ChessUI extends JFrame implements ActionListener {
 
         movesGL.setRows(movesGL.getRows() + 1);
 
-        JLabel round = new JLabel(ChessBoard.getRound() + ": ");
+        JLabel round = new JLabel();
         round.setHorizontalAlignment(SwingConstants.RIGHT);
         round.setPreferredSize(new Dimension(30, 30));
         movesGrid.add(round);
 
         movesButtons.add(new JButton[2]);
+        round.setText(movesButtons.size() + ": ");
         for(int j = 0; j < 2; j++){
 //            movesButtons.get(ChessBoard.getRound() - 1)[j] = new JButton();
 //            movesButtons.get(ChessBoard.getRound() - 1)[j].setPreferredSize(new Dimension(50, 30));
@@ -765,7 +781,9 @@ public class ChessUI extends JFrame implements ActionListener {
             knightItem.setIcon(new ImageIcon(n.getImage()));
 
             promoteMenu.show(this, selectPieceCol * 50, selectPieceRow * 50);
-            
+            promoteMenu.setVisible(true);
+
+
             promotionRow = row;
             promotionCol = col;
         }
@@ -968,6 +986,8 @@ public class ChessUI extends JFrame implements ActionListener {
     }
 
     private void promote(Piece p){
+
+        promote = false;
 
         chessBoard.promote(p.getName(), promotionRow, promotionCol);
         buttons[promotionRow][promotionCol].setIcon(new ImageIcon(p.getImage()));
