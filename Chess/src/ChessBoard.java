@@ -2133,7 +2133,7 @@ public class ChessBoard{
                     int pawnRow = -1;
                     if(isWhite){
                         for(int i = SEVEN_POS; i > 0; i--){
-                            if(pieces[i][move.charAt(1) - 'a'] instanceof  Pawn){
+                            if(pieces[i][move.charAt(0) - 'a'] instanceof  Pawn){
                                 pawnRow = i;
                                 break;
                             }
@@ -2141,7 +2141,7 @@ public class ChessBoard{
                     }
                     else {
                         for(int i = 0; i < SEVEN_POS; i++){
-                            if(pieces[i][ARRAY_SIZE - (move.charAt(1) - '0')] instanceof  Pawn){
+                            if(pieces[i][ARRAY_SIZE - (move.charAt(0) - '0')] instanceof  Pawn){
                                 pawnRow = i;
                                 break;
                             }
