@@ -53,7 +53,9 @@ public class ChessIO {
                 movesTxt += txtScanner.next();
             }
 
-            movesTxt = movesTxt.replaceAll("\\{.*?}", "").replaceAll("\\$\\d", "");
+            movesTxt = movesTxt.replaceAll("\\{.*?}", "").replaceAll("\\$\\d\\d", "").replaceAll("\\$\\d", "");
+            movesTxt = movesTxt.replaceAll("\\(.*?}", "").replaceAll("\\(.*?\\)", "").replaceAll("\\(", "").replaceAll("\\)", "");
+
 
             moveScanner = new Scanner(movesTxt);
 
@@ -74,7 +76,15 @@ public class ChessIO {
                 moveScanner.close();
         }
 
-        System.out.println(moves);
+//        for(int j = 0; j < moves.size(); j++){
+//            if(j % 2 == 0){
+//                System.out.printf("%d: %s", j / 2 + 1, moves.get(j));
+//            }
+//            else{
+//                System.out.printf(" %s\n", moves.get(j));
+//            }
+//        }
+//        System.out.println();
 
         return moves;
     }

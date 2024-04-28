@@ -21,7 +21,7 @@ public class SideActionPerformed implements ActionListener {
 
                 if(e.getSource() == sideButtons.get(row)[col]){
                     ChessBoard.setInstance(row, col);
-                    ChessUI.getUI().updateInstance();
+                    ChessUI.getUI().updateInstance(row, col);
                     return;
                 }
             }

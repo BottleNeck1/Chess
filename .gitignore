@@ -15,3 +15,5 @@ bin/
 
 # This rule ignores VS Code directory
 **/.vscode
+
+files/*.pgn

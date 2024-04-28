@@ -125,13 +125,15 @@ public class ChessUI extends JFrame implements ActionListener {
     /** computer Level Choices Options */
     private final String[] computerLevelChoices = {"0", "1", "2", "3"};
     /** Watch Computer Turn by Turn Options */
-    private final String[] watchComputerChoices = {"Yes", "no"};
+    private final String[] watchComputerChoices = {"Yes", "No"};
     /** Load Button */
     private JButton loadButton;
     /** Save Button */
     private JButton saveButton;
     /** New Game Button */
     private JButton newButton;
+
+    private JButton disabledButton;
     /** Computer Bot Level */
     private int computerLevel;
     /** RGB Value */
@@ -238,6 +240,9 @@ public class ChessUI extends JFrame implements ActionListener {
                     watchComputerBox.setEnabled(true);
                     chessPanel.add(playButton, BorderLayout.SOUTH);
                 }
+                else if(playComputer) {
+                    continueGame = true;
+                }
 
                 computerMove();
             }
@@ -274,6 +279,9 @@ public class ChessUI extends JFrame implements ActionListener {
                     computerSide = isWhiteTurn;
                     watchComputerBox.setEnabled(true);
                     chessPanel.add(playButton, BorderLayout.SOUTH);
+                }
+                else if(playComputer) {
+                    continueGame = true;
                 }
 
                 computerMove();
@@ -366,10 +374,11 @@ public class ChessUI extends JFrame implements ActionListener {
 
                     resetBoard();
                     chessBoard.loadChessFromFile(filename);
-                    updateInstance();
 
                     decrementMovesGrid();
                     incrementMovesGrid();
+
+                    updateInstance(ChessBoard.getChessBoardListSize() - 1, chessBoard.isWhiteTurn() ? 1 : 0);
 
                     for(int i = 0; i < ChessBoard.getMovesList().size(); i++){
                         movesButtons.get(i)[0].setText(ChessBoard.getMovesList().get(i)[0]);
@@ -382,6 +391,8 @@ public class ChessUI extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(ui, exp.getMessage());
                 }
 
+                playComputer = false;
+                playerSide = true;
             }
         });
 
@@ -571,6 +582,9 @@ public class ChessUI extends JFrame implements ActionListener {
         promoteMenu.add(bishopItem);
         promoteMenu.add(knightItem);
 
+//        movesButtons.get(0)[0].setEnabled(false);
+//        disabledButton = movesButtons.get(0)[0];
+
         //make GUI visible to user
         setVisible(true);
 
@@ -601,7 +615,6 @@ public class ChessUI extends JFrame implements ActionListener {
      */
     public void actionPerformed(ActionEvent e) {
 
-        if(!canPlay) { return; }
 
         //Iterates 2D buttons array to find the index for the pressed button
         for(int row = 0; row < GRID_SIZE; row++){
@@ -631,6 +644,8 @@ public class ChessUI extends JFrame implements ActionListener {
                         markAvailable(row, col);
                     }
                     else { //if a player has chosen a piece
+
+                        if(!canPlay) { return; }
 
                         //when player selects a button what is not a valid move, do nothing
                         if(!chessBoard.isValidMove(row, col) || playerSide == null){
@@ -677,6 +692,8 @@ public class ChessUI extends JFrame implements ActionListener {
             movesButtons.get(movesButtons.size() - 1)[j].addActionListener(side);
             movesGrid.add(movesButtons.get(movesButtons.size() - 1)[j]);
         }
+
+        movesScroll.getVerticalScrollBar().setValue(movesScroll.getVerticalScrollBar().getMaximum());
 
         if(movesButtons.size() < ChessBoard.getChessBoardListSize())
             incrementMovesGrid();
@@ -808,7 +825,7 @@ public class ChessUI extends JFrame implements ActionListener {
 
         if((Boolean)isWhiteTurn != computerSide && playerSide != null) { return; }
 
-        if(!playComputer || !canPlay || (!continueGame && watchComputer)) { return; }
+        if(!playComputer || !canPlay || (!continueGame && watchComputer && playerSide == null)) { return; }
 
         try {
             chessBoard.computerMove(computerSide, computerLevel);
@@ -859,8 +876,13 @@ public class ChessUI extends JFrame implements ActionListener {
         int addIdx = isWhiteTurn ? 0 : 1;
         int buttonIdx = ChessBoard.getRound() - (isWhiteTurn ? 1 : 2);
 
+        if(disabledButton != null)
+            disabledButton.setEnabled(true);
+
         movesButtons.get(buttonIdx)[addIdx].setText(ChessBoard.getMoveString(buttonIdx, addIdx));
-        
+        movesButtons.get(buttonIdx)[addIdx].setEnabled(false);
+        disabledButton = movesButtons.get(buttonIdx)[addIdx];
+
         //make it the next players turn after they have moved a piece
         isWhiteTurn = !isWhiteTurn;
 
@@ -869,6 +891,8 @@ public class ChessUI extends JFrame implements ActionListener {
 
         if(isWhiteTurn)
             incrementMovesGrid();
+
+        movesScroll.getVerticalScrollBar().setValue(movesScroll.getVerticalScrollBar().getMaximum());
 
         //If White king is in checkmate call for game to end with black winning
         if(chessBoard.isCheckMate(true)) {
@@ -881,11 +905,17 @@ public class ChessUI extends JFrame implements ActionListener {
         }
     }
 
-    public void updateInstance(){
+    public void updateInstance(int row, int col){
         chessBoard = ChessBoard.getInstance();
         this.isWhiteTurn = chessBoard.isWhiteTurn();
         updateBoard();
         unmark();
+
+        if(disabledButton != null){
+            disabledButton.setEnabled(true);
+        }
+        disabledButton = movesButtons.get(row)[col];
+        disabledButton.setEnabled(false);
     }
 
     private void updateBoard() {
