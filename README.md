@@ -8,5 +8,5 @@
 
 * [Chess-V4](https://github.com/BottleNeck1/Projects/tree/ac315cd041abc26f390c8e9017936f98bfd7597c/Java-Projects/Chess) - Added Castling, En Passant, Pawn Promotion. Changed Piece Selection Flow. No stalement implementation
 
-* [Chess-V5](https://github.com/BottleNeck1/Projects/tree/4f442873fc3e04265c60fd283d4c7f2031dbd93a/Java-Projects/Chess) - Added moving between turns to revert moves and a chess notation importer/exporter
+* [Chess-V5](https://github.com/BottleNeck1/Projects/tree/4f442873fc3e04265c60fd283d4c7f2031dbd93a/Chess) - Added moving between turns to revert moves and a chess notation importer/exporter
 
