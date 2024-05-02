@@ -77,6 +77,8 @@ public class ChessUI extends JFrame implements ActionListener {
     /** bool for if the game is a stalemate */
     private boolean isStaleMate;
 
+    private boolean waitForPromote;
+
     private boolean promote;
     /** Promotion Menu */
     private JPopupMenu promoteMenu;
@@ -168,6 +170,7 @@ public class ChessUI extends JFrame implements ActionListener {
         gameEnd = false;
         continueGame = false;
         watchComputer = true;
+        waitForPromote = false;
 
         tabbedPane = new JTabbedPane();
 
@@ -797,6 +800,7 @@ public class ChessUI extends JFrame implements ActionListener {
             bishopItem.setIcon(new ImageIcon(b.getImage()));
             knightItem.setIcon(new ImageIcon(n.getImage()));
 
+            waitForPromote = true;
             promoteMenu.show(this, selectPieceCol * 50, selectPieceRow * 50);
             promoteMenu.setVisible(true);
 
@@ -822,6 +826,8 @@ public class ChessUI extends JFrame implements ActionListener {
     }
 
     private void computerMove(){
+
+        if(waitForPromote) { return; }
 
         if((Boolean)isWhiteTurn != computerSide && playerSide != null) { return; }
 
@@ -1026,6 +1032,9 @@ public class ChessUI extends JFrame implements ActionListener {
         movesButtons.get(ChessBoard.getRound() - 2)[1].setMargin(new Insets(0, 0, 0, 0));
         movesButtons.get(ChessBoard.getRound() - 1)[0].setText(ChessBoard.getMoveString(ChessBoard.getRound() - 1, 0));
         movesButtons.get(ChessBoard.getRound() - 1)[0].setMargin(new Insets(0, 0, 0, 0));
+
+        waitForPromote = false;
+        computerMove();
     }
 
     /** Resets Game */

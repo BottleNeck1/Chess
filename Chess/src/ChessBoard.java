@@ -39,6 +39,8 @@ public class ChessBoard{
     /** ChessBot */
     private ChessBot chessBot;
 
+
+
     /** 7 Grid Position */
     private static final int SEVEN_POS = 7;
 
@@ -2187,8 +2189,6 @@ public class ChessBoard{
                         }
                     }
                 }
-                LinkedList<String> tset = new LinkedList<>();
-                tset.listIterator().hasPrevious();
 
                 if(!isValidMove(possible.get(0).getRow(), possible.get(0).getCol(), moveRow, moveCol)){
                     throw new IllegalArgumentException("The move " + move + " is invalid");
